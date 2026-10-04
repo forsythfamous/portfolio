@@ -3,7 +3,7 @@ title: 'KONTA: hardening an AI business ledger for production'
 summary: 'An AI-assisted ledger for small businesses, run from a web dashboard or WhatsApp, where AI proposes and deterministic code commits.'
 order: 1
 context: 'Product engineering · Google Cloud'
-outcome: '100+ automated test files, 70+ merged pull requests, deny-all data layer'
+outcome: '72 merged pull requests, 98 test files, deny-all data layer'
 stack: ['Google Cloud Run', 'Secret Manager', 'Firestore', 'Docker', 'TypeScript', 'Node.js', 'WhatsApp Cloud API', 'Gemini']
 private: true
 ---
@@ -52,8 +52,8 @@ Firestore transactions. It is a documented constraint with a known exit path, no
 
 ## Engineering practice
 
-- **100+ automated test files**, runnable against an in-memory database (about 30 seconds) or the real Firestore emulator.
+- **98 test files**, runnable against an in-memory database (about 30 seconds) or the real Firestore emulator.
 - Tests refuse to touch a real cloud project: credentials are stripped from the environment, and Firestore mode is rejected unless it points at the emulator.
-- Every change ships through a pull request: **70+ merged**.
+- Every change ships through a pull request: **72 merged**.
 
 *The source is private; this write-up describes the architecture and practices.*
