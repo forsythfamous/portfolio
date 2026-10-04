@@ -6,7 +6,7 @@ role: 'Design, build and operations'
 period: 'Oct 2026'
 status: 'Public source'
 source: 'https://github.com/forsythfamous/portfolio'
-stack: ['Astro', 'Cloudflare Pages', 'GitHub Actions', 'GitHub API', 'dev.to API', 'Claude Code', 'Playwright']
+stack: ['Astro', 'Cloudflare Pages', 'GitHub Actions', 'GitHub API', 'dev.to API', 'Playwright']
 diagram: 'site'
 core: 'An agent may propose content; only a reviewed pull request can publish it.'
 tldr:
@@ -40,7 +40,7 @@ decisions:
       - { label: 'public/_headers', url: 'https://github.com/forsythfamous/portfolio/blob/main/public/_headers' }
       - { label: '.github/workflows/ci.yml', url: 'https://github.com/forsythfamous/portfolio/blob/main/.github/workflows/ci.yml' }
   - title: 'The agent proposes; review commits'
-    decision: 'A weekly workflow runs Claude Code against my public repositories. When one is new or has changed significantly, it drafts a case study and opens a pull request labelled case-study-draft, listing the files it relied on. It has no path to main except a reviewed merge.'
+    decision: 'A weekly workflow runs an AI agent against my public repositories. When one is new or has changed significantly, it drafts a case study and opens a pull request labelled case-study-draft, listing the files it relied on. It has no path to main except a reviewed merge.'
     options:
       - 'Let the agent commit to main: always current, and unreviewed claims in public.'
       - 'Pull requests only.'

@@ -8,7 +8,7 @@ It is a static [Astro](https://astro.build) site on Cloudflare Pages that keeps 
 - **Control plane**: the home page panel reports the site's own pipeline. `/status.json` is written on every
   build and checked live from the visitor's browser.
 - **Nightly deploys**: `.github/workflows/deploy.yml` builds and deploys on push to `main` and every night.
-- **Case-study agent**: `.github/workflows/case-study-agent.yml` runs Claude Code weekly and opens a
+- **Case-study agent**: `.github/workflows/case-study-agent.yml` runs an AI agent weekly and opens a
   `case-study-draft` pull request when a repository deserves a write-up. Nothing ships without review.
 
 ## Local development
