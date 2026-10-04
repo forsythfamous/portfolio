@@ -1,11 +1,10 @@
-// Hand-maintained profile content. Everything here is sourced from the CV and
-// GitHub profile README; employer names are intentionally omitted.
+// Hand-maintained profile content. Claims must be backed by a repository;
+// employer names are intentionally omitted.
 
 export const profile = {
   name: 'Forsyth Famous',
   role: 'Cloud Infrastructure & DevOps Engineer',
   location: 'Kraków, Poland',
-  availability: 'Open to senior cloud & platform roles — Kraków, hybrid or remote',
   headline: 'I design, automate and operate secure cloud platforms for large-scale enterprise environments.',
   intro:
     '6+ years across Azure and AWS: networking, identity and governance, Kubernetes, Terraform and CI/CD. ' +
@@ -19,12 +18,8 @@ export const profile = {
   },
 };
 
-export const stats = [
-  { value: '2 days → 30 min', label: 'Environment provisioning time after moving to Terraform + CI/CD' },
-  { value: '5', label: 'Azure subscriptions on a hub-spoke network with private endpoints' },
-  { value: '~10 / month', label: 'Recurring incidents eliminated through root-cause analysis' },
-  { value: '4.8–5 / 5', label: 'Customer satisfaction across incident and operations work' },
-];
+// Outcome numbers are added only once a repository proves them (see ~/career/evidence).
+export const stats: { value: string; label: string }[] = [];
 
 export const certifications = [
   {

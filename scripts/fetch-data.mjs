@@ -9,13 +9,16 @@
 //   GITHUB_TOKEN  optional; enables the contribution calendar and higher rate limits.
 
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const GH_USER = 'forsythfamous';
 const SITE_REPO = 'forsythfamous/portfolio';
 const DEVTO_USER = 'forsyth_famous_';
 const AGENT_LABEL = 'case-study-draft';
 const EXCLUDE_REPOS = new Set(['forsythfamous', 'portfolio']);
+// Only repositories the evidence audit marked site-worthy are shown. The list
+// lives in the repo (not the private ledger) so CI builds see the same thing.
+const SHOWCASE = new Set(JSON.parse(readFileSync('src/data/showcase-repos.json', 'utf8')));
 // Upstream PRs that only add a name to a contributors list are not shown.
 const SKIP_PR_TITLE = /contributors?\b/i;
 
@@ -65,6 +68,7 @@ const repos = await attempt('github.repos', async () => {
   const list = await gh(`/users/${GH_USER}/repos?type=owner&sort=pushed&per_page=100`);
   return list
     .filter((r) => !r.fork && !r.private && !r.archived && !EXCLUDE_REPOS.has(r.name))
+    .filter((r) => SHOWCASE.has(r.name))
     .map((r) => ({
       name: r.name,
       description: r.description ?? '',

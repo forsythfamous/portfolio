@@ -62,6 +62,7 @@ const height = 7 * (cell + gap);
         </div>
       )}
 
+      {repos.length > 0 && (
       <div>
         <h3 class="sub">Reference implementations</h3>
         <ul class="repos" role="list">
@@ -79,6 +80,7 @@ const height = 7 * (cell + gap);
           ))}
         </ul>
       </div>
+      )}
     </div>
   </div>
 </section>

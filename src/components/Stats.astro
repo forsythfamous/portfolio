@@ -2,6 +2,7 @@
 import { stats } from '../data/profile';
 ---
 
+{stats.length > 0 && (
 <section class="container" aria-label="Track record">
   <dl class="stats">
     {stats.map((s) => (
@@ -12,11 +13,12 @@ import { stats } from '../data/profile';
     ))}
   </dl>
 </section>
+)}
 
 <style>
   .stats {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     margin: 0 0 var(--s-8);
     border: 1px solid var(--line);
     border-radius: var(--radius);

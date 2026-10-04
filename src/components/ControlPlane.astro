@@ -49,10 +49,8 @@ const rows: Row[] = [
     key: 'sync',
     label: 'GitHub sync',
     state: failed('github.repos') ? 'warn' : 'ok',
-    value: `${data.repos.length} public repos`,
-    detail: data.contributions
-      ? `${data.contributions.total} contributions in the last year`
-      : 'contribution calendar needs a token',
+    value: data.contributions ? `${data.contributions.total} contributions / year` : 'contributions unavailable',
+    detail: `${data.upstream.length} upstream PRs · ${data.repos.length} showcased repos`,
     time: data.build.at,
   },
   data.agent?.lastRun
