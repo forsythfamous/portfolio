@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://forsythfamous.dev',
+  site: 'https://forsythfamous.pages.dev',
   build: {
     // Keep all CSS in external files so the CSP can use style-src 'self'.
     inlineStylesheets: 'never',
