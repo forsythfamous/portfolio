@@ -1,7 +1,7 @@
 ---
 title: 'This site: a portfolio that operates itself'
 summary: 'A static site whose content, live status diagram and case-study drafts are kept current by its own pipeline, and which only shows claims a repository can back.'
-order: 3
+order: 4
 role: 'Design, build and operations'
 period: 'Oct 2026'
 status: 'Public source'

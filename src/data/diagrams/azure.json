@@ -1,0 +1,177 @@
+{
+  "id": "azure",
+  "title": "Azure hub-spoke architecture",
+  "summary": "A hub holds shared DNS, logging and the optional firewall. The workload spoke takes Internet traffic only through the WAF; the data spoke exposes storage only through a private endpoint. Changes arrive only through the pipeline.",
+  "components": [
+    {
+      "id": "client",
+      "name": "Internet clients",
+      "kind": "client",
+      "tech": "HTTP(S)",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "law",
+      "name": "Log Analytics",
+      "kind": "datastore",
+      "tech": "1 GB/day cap · resource tables",
+      "col": 1,
+      "row": 0,
+      "note": "Gateway, WAF and resource diagnostics land in resource-specific tables (AGWAccessLogs, AGWFirewallLogs)."
+    },
+    {
+      "id": "fw",
+      "name": "Azure Firewall",
+      "kind": "edge",
+      "tech": "optional · off by default",
+      "col": 2,
+      "row": 0,
+      "note": "When enabled, the app subnet's default route points at it, and one application rule allows the storage account's blob FQDN. Its subnets always exist, so toggling it never changes the address plan."
+    },
+    {
+      "id": "dns",
+      "name": "Private DNS zones",
+      "kind": "service",
+      "tech": "privatelink.* · linked to all VNets",
+      "col": 3,
+      "row": 0,
+      "note": "Hosted once in the hub; each spoke creates its own links, so adding a spoke never edits the hub module. Clients in the spokes resolve the storage FQDN to the private endpoint IP through these zones."
+    },
+    {
+      "id": "appgw",
+      "name": "App Gateway WAF_v2",
+      "kind": "edge",
+      "tech": "Prevention · DRS 2.1 · bot rules",
+      "col": 1,
+      "row": 2,
+      "note": "Custom rules run before the managed sets: admin paths blocked unless allowlisted, and 100 requests per minute per client IP. Authorization headers and cookies are scrubbed from WAF logs."
+    },
+    {
+      "id": "vm",
+      "name": "App VM",
+      "kind": "service",
+      "tech": "no public IP · no SSH rule",
+      "col": 2,
+      "row": 2,
+      "note": "The WAF backend. Managed with run-command only; default outbound access is disabled on compute subnets."
+    },
+    {
+      "id": "pe",
+      "name": "Private endpoint",
+      "kind": "edge",
+      "tech": "NSG-filtered endpoint subnet",
+      "col": 3,
+      "row": 2
+    },
+    {
+      "id": "storage",
+      "name": "Storage account",
+      "kind": "datastore",
+      "tech": "public access off · no shared keys",
+      "col": 4,
+      "row": 2,
+      "note": "Entra ID authorisation by default; managed through ARM only, so Terraform never needs a network path to the blob endpoint."
+    },
+    {
+      "id": "github",
+      "name": "GitHub Actions",
+      "kind": "ci",
+      "tech": "propose · gate · commit",
+      "col": 0,
+      "row": 4,
+      "note": "Pull requests: fmt, validate, tflint, trivy and a speculative plan with a read-only identity. Main: a fresh plan and fingerprint, then apply only after approval and only if the fingerprint still matches."
+    },
+    {
+      "id": "entra",
+      "name": "Entra ID",
+      "kind": "external",
+      "tech": "OIDC federated credentials",
+      "col": 1,
+      "row": 4,
+      "note": "Two identities: plan (Reader, for pull requests) and apply (Contributor, only inside the production environment). No client secrets exist."
+    },
+    {
+      "id": "arm",
+      "name": "Azure Resource Manager",
+      "kind": "service",
+      "tech": "Terraform azurerm 4.x",
+      "col": 2,
+      "row": 4
+    }
+  ],
+  "flows": [
+    {
+      "from": "client",
+      "to": "appgw",
+      "label": "HTTP(S), inspected by the WAF",
+      "type": "data"
+    },
+    {
+      "from": "appgw",
+      "to": "vm",
+      "label": "backend pool",
+      "type": "data"
+    },
+    {
+      "from": "appgw",
+      "to": "law",
+      "label": "access and WAF logs",
+      "type": "data"
+    },
+    {
+      "from": "vm",
+      "to": "fw",
+      "label": "default route via UDR (firewall on)",
+      "type": "data"
+    },
+    {
+      "from": "fw",
+      "to": "pe",
+      "label": "application rule: blob FQDN only",
+      "type": "data"
+    },
+    {
+      "from": "pe",
+      "to": "storage",
+      "label": "private link",
+      "type": "data"
+    },
+    {
+      "from": "github",
+      "to": "entra",
+      "label": "OIDC token exchange",
+      "type": "control"
+    },
+    {
+      "from": "entra",
+      "to": "arm",
+      "label": "short-lived token for plan or approved apply",
+      "type": "control"
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "Hub VNet",
+      "contains": [
+        "law",
+        "fw",
+        "dns"
+      ]
+    },
+    {
+      "name": "Workload spoke",
+      "contains": [
+        "appgw",
+        "vm"
+      ]
+    },
+    {
+      "name": "Data spoke",
+      "contains": [
+        "pe",
+        "storage"
+      ]
+    }
+  ]
+}

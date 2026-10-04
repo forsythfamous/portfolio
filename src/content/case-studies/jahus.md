@@ -1,7 +1,7 @@
 ---
 title: 'JahUs: deploys that refuse to go wrong'
 summary: 'A two-player web game used as the proving ground for environment isolation, guarded production releases and a client that cannot write to its own database.'
-order: 2
+order: 3
 role: 'Platform, security and release engineering'
 period: 'Sep – Oct 2026'
 status: 'Private · staging; production provisioned, not yet released'

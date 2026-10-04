@@ -17,7 +17,7 @@ const caseStudies = defineCollection({
     status: z.string(),
     source: z.union([z.literal('private'), z.url()]),
     stack: z.array(z.string()),
-    diagram: z.enum(['konta', 'jahus', 'site']),
+    diagram: z.enum(['konta', 'azure', 'jahus', 'site']),
     core: z.string(), // the one-line core decision shown on the card
     tldr: z.object({ problem: z.string(), decision: z.string(), result: z.string() }),
     decisions: z.array(
