@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import SectionHead from './SectionHead.astro';
 import headshot from '../assets/headshot.jpg';
-import { credentials, profile } from '../data/profile';
+import { appliedSkills, certifications, profile } from '../data/profile';
 ---
 
 <section id="about" class="section w-prose" aria-labelledby="about-title">
@@ -12,13 +12,19 @@ import { credentials, profile } from '../data/profile';
     <div class="text">
       {profile.about.map((p) => <p>{p}</p>)}
       <p class="certs meta">
-        {credentials.map((c, i) => (
+        {certifications.map((c, i) => (
           <>
             {i > 0 && <span aria-hidden="true"> · </span>}
-            {c.url ? <a href={c.url} title={c.name}>{c.code} ↗</a> : <span title={c.name}>{c.code}</span>}
+            <a href={c.url} title={`Microsoft Certified: ${c.name}`}>{c.code} ↗</a>
           </>
         ))}
       </p>
+      <details class="skills">
+        <summary class="meta">{appliedSkills.length} Microsoft Applied Skills</summary>
+        <ul class="meta">
+          {appliedSkills.map((a) => <li><a href={a.url}>{a.name} ↗</a></li>)}
+        </ul>
+      </details>
     </div>
   </div>
 </section>
@@ -46,6 +52,32 @@ import { credentials, profile } from '../data/profile';
 
   .certs {
     color: var(--fg-2);
+  }
+
+  .certs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .skills summary {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--fg-2);
+  }
+
+  .skills summary:hover {
+    color: var(--fg);
+  }
+
+  .skills ul {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
   }
 
   @media (max-width: 560px) {
