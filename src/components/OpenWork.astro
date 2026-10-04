@@ -1,0 +1,205 @@
+---
+// Public repositories, upstream pull requests and the contribution calendar,
+// all synced from GitHub at build time.
+import { data } from '../data/site-data';
+import { profile } from '../data/profile';
+
+const repos = data.repos.slice(0, 6);
+const upstream = data.upstream;
+
+// Contribution calendar: 7 rows (weekdays) × N weeks, bucketed into 5 levels.
+const weeks = data.contributions?.weeks ?? [];
+const max = Math.max(1, ...weeks.flat().map(([, n]) => n));
+const level = (n: number) => (n === 0 ? 0 : Math.min(4, Math.ceil((n / max) * 4)));
+const cell = 11;
+const gap = 3;
+const width = weeks.length * (cell + gap);
+const height = 7 * (cell + gap);
+---
+
+<section id="open-source" class="section" aria-labelledby="open-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Synced from GitHub</p>
+        <h2 id="open-title">Open work</h2>
+      </div>
+      <a class="meta" href={profile.links.github}>github.com/forsythfamous ↗</a>
+    </div>
+
+    {data.contributions && (
+      <figure class="calendar">
+        <div class="calendar-scroll">
+          <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="img" aria-label={`${data.contributions.total} contributions in the last year`}>
+            {weeks.map((week, x) =>
+              week.map(([date, n], y) => (
+                <rect x={x * (cell + gap)} y={y * (cell + gap)} width={cell} height={cell} rx="2" class={`l${level(n)}`}>
+                  <title>{`${n} on ${date}`}</title>
+                </rect>
+              )),
+            )}
+          </svg>
+        </div>
+        <figcaption class="meta">{data.contributions.total} contributions in the last year</figcaption>
+      </figure>
+    )}
+
+    <div class="cols">
+      {upstream.length > 0 && (
+        <div>
+          <h3 class="sub">Upstream contributions</h3>
+          <ul class="prs" role="list">
+            {upstream.map((pr) => (
+              <li>
+                <a href={pr.url}>
+                  <span class="pr-repo">{pr.repo} #{pr.number}</span>
+                  <span class="pr-title">{pr.title}</span>
+                  <span class="pr-state" data-state={pr.state}>{pr.state}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div>
+        <h3 class="sub">Reference implementations</h3>
+        <ul class="repos" role="list">
+          {repos.map((r) => (
+            <li>
+              <a href={r.url}>
+                <span class="repo-name">{r.name}</span>
+                {r.description && <span class="repo-desc">{r.description}</span>}
+                <span class="repo-meta">
+                  {r.language && <span>{r.language}</span>}
+                  <span>updated <time datetime={r.pushedAt} data-relative>{r.pushedAt.slice(0, 10)}</time></span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .calendar {
+    margin: 0 0 var(--s-7);
+  }
+
+  .calendar-scroll {
+    overflow-x: auto;
+    padding-bottom: var(--s-2);
+  }
+
+  .calendar svg {
+    display: block;
+    max-width: none;
+  }
+
+  rect.l0 { fill: var(--surface-2); }
+  rect.l1 { fill: #14532d; }
+  rect.l2 { fill: #15803d; }
+  rect.l3 { fill: #22c55e; }
+  rect.l4 { fill: #86efac; }
+
+  figcaption {
+    margin-top: var(--s-2);
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: var(--s-7);
+  }
+
+  .sub {
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: var(--s-4);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .prs li + li,
+  .repos li + li {
+    margin-top: var(--s-3);
+  }
+
+  .prs a,
+  .repos a {
+    display: grid;
+    gap: var(--s-1);
+    padding: var(--s-4);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color 160ms var(--ease);
+  }
+
+  .prs a:hover,
+  .repos a:hover {
+    border-color: var(--line-strong);
+  }
+
+  .pr-repo,
+  .repo-meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--fg-muted);
+  }
+
+  .pr-title,
+  .repo-name {
+    color: var(--fg);
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .repo-name {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+  }
+
+  .repo-desc {
+    font-size: 0.92rem;
+    color: var(--fg-2);
+  }
+
+  .repo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+
+  .pr-state {
+    justify-self: start;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--fg-muted);
+  }
+
+  .pr-state[data-state='merged'] {
+    color: var(--accent-text);
+    border-color: rgb(74 222 128 / 0.4);
+  }
+
+  @media (max-width: 900px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

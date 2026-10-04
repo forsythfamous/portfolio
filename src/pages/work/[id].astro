@@ -1,0 +1,139 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const studies = await getCollection('caseStudies', ({ data }) => !data.draft);
+  return studies.map((study) => ({ params: { id: study.id }, props: { study } }));
+}
+
+const { study } = Astro.props;
+const { Content } = await render(study);
+const { title, summary, context, outcome, stack, repo } = study.data;
+---
+
+<Base title={`${title} — Forsyth Famous`} description={summary}>
+  <article class="container article">
+    <a class="back meta" href="/#work">← All case studies</a>
+    <header>
+      <p class="eyebrow">{context}</p>
+      <h1>{title}</h1>
+      <p class="summary">{summary}</p>
+      <dl class="facts">
+        <div><dt>Outcome</dt><dd>{outcome}</dd></div>
+        <div>
+          <dt>Stack</dt>
+          <dd><ul class="tags">{stack.map((s) => <li class="tag">{s}</li>)}</ul></dd>
+        </div>
+        {repo && <div><dt>Source</dt><dd><a href={repo}>{repo.replace('https://', '')} ↗</a></dd></div>}
+      </dl>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .article {
+    max-width: calc(760px + var(--gutter) * 2);
+    padding-block: var(--s-7) var(--s-9);
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  header {
+    margin-top: var(--s-4);
+    padding-bottom: var(--s-6);
+    border-bottom: 1px solid var(--line);
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 1.4rem + 2vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .summary {
+    margin-top: var(--s-4);
+    font-size: 1.15rem;
+  }
+
+  .facts {
+    display: grid;
+    gap: var(--s-3);
+    margin: var(--s-6) 0 0;
+  }
+
+  .facts > div {
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: var(--s-4);
+    align-items: baseline;
+  }
+
+  dt {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--fg);
+  }
+
+  .prose {
+    padding-top: var(--s-6);
+  }
+
+  .prose :global(h2) {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: var(--s-7) 0 var(--s-3);
+  }
+
+  .prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  .prose :global(p),
+  .prose :global(ul) {
+    margin: 0 0 var(--s-4);
+  }
+
+  .prose :global(ul) {
+    padding-left: 1.2em;
+  }
+
+  .prose :global(li) {
+    margin-bottom: var(--s-2);
+  }
+
+  .prose :global(li::marker) {
+    color: var(--accent);
+  }
+
+  .prose :global(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .prose :global(em) {
+    color: var(--fg-muted);
+  }
+
+  @media (max-width: 520px) {
+    .facts > div {
+      grid-template-columns: 1fr;
+      gap: var(--s-1);
+    }
+  }
+</style>

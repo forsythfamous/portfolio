@@ -1,0 +1,63 @@
+name: Case-study agent
+
+# Weekly: Claude Code looks for a public repository that is new or has changed
+# significantly, drafts one case study for it and opens a pull request.
+# Nothing is published until the pull request is reviewed and merged.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: case-study-agent
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure review label exists
+        run: gh label create case-study-draft --color 22c55e --description "Drafted by the case-study agent; needs review" --force
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: >-
+            --model claude-sonnet-5-5
+            --max-turns 40
+            --allowedTools "Bash(gh:*),Bash(git:*),Bash(ls:*),Bash(cat:*),Read,Write,Edit,Glob,Grep"
+          prompt: |
+            You maintain the case studies on Forsyth Famous's portfolio site (this repository).
+            Case studies live in src/content/case-studies/*.md; read every existing one first,
+            including its frontmatter schema in src/content.config.ts, and match their structure and tone.
+
+            1. List public, non-fork repositories of the GitHub user "forsythfamous" with
+               `gh repo list forsythfamous --visibility public --source --json name,description,pushedAt,url`.
+               Ignore "forsythfamous" and "portfolio".
+            2. List open pull requests labelled case-study-draft (`gh pr list --label case-study-draft`).
+               Skip any repository that already has an open draft.
+            3. Pick AT MOST ONE repository that is either (a) not yet covered by any case study's `repo`
+               field and substantial enough to deserve one (real infrastructure, automation or a working
+               system; not a short syntax reference or single-file exercise), or (b) covered, but changed
+               significantly since that case study was written.
+               If nothing qualifies, stop and make no changes.
+            4. Read the repository's README and enough of its code and workflows (`gh api` /
+               `gh repo view`) to understand what it really does.
+            5. Write or update one case study. Rules:
+               - Senior, ownership voice: design, operate, harden. Never "lab", "learning", "exercise" or "student".
+               - Only state facts you can verify in the repository. Never invent metrics, users, clients or outcomes.
+               - Never name employers.
+               - Set `repo` to the repository URL and choose an `order` after the existing ones.
+            6. Create branch `case-study/<repo-name>`, commit, push, and open a pull request with
+               `gh pr create --label case-study-draft`. In the body, list the files and facts you relied on
+               so the reviewer can check every claim.

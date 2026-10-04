@@ -1,0 +1,38 @@
+---
+import { data } from '../data/site-data';
+import { profile } from '../data/profile';
+
+const sha = data.build.sha?.slice(0, 7);
+const year = new Date(data.build.at).getUTCFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container row">
+    <p>© {year} {profile.name}</p>
+    <p class="meta">
+      {sha ? (
+        <>build <a href={`https://github.com/forsythfamous/portfolio/commit/${data.build.sha}`}>{sha}</a></>
+      ) : (
+        <>local build</>
+      )}
+      {' · '}
+      <time datetime={data.build.at}>{data.build.at.slice(0, 16).replace('T', ' ')} UTC</time>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    padding-block: var(--s-6);
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-3);
+  }
+</style>

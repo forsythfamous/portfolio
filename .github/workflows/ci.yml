@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch data, type-check and build
+        run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: No inline scripts or styles (CSP is script-src/style-src 'self')
+        run: |
+          if grep -rEl '<script(\s[^>]*)?>[^<]|<style' dist --include='*.html'; then
+            echo "::error::Inline <script> or <style> found; it would be blocked by the CSP in public/_headers"
+            exit 1
+          fi
+          if grep -rl 'url(data:' dist/_astro --include='*.css'; then
+            echo "::error::data: URI in CSS; font-src/img-src policy would block it"
+            exit 1
+          fi

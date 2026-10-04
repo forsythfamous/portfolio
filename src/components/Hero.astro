@@ -1,0 +1,116 @@
+---
+import { Image } from 'astro:assets';
+import headshot from '../assets/headshot.jpg';
+import { profile } from '../data/profile';
+---
+
+<section class="hero container" aria-labelledby="hero-title">
+  <div class="copy">
+    <p class="eyebrow reveal">{profile.role} · {profile.location}</p>
+    <h1 id="hero-title" class="reveal reveal-2">{profile.headline}</h1>
+    <p class="intro reveal reveal-3">{profile.intro}</p>
+    <div class="actions reveal reveal-3">
+      <a class="btn btn-primary" href="#work">View case studies</a>
+      <a class="btn" href={`mailto:${profile.email}`}>Get in touch</a>
+    </div>
+  </div>
+  <figure class="portrait reveal reveal-2">
+    <Image
+      src={headshot}
+      alt={`Portrait of ${profile.name}`}
+      width={240}
+      height={240}
+      densities={[1, 1.5]}
+      loading="eager"
+      fetchpriority="high"
+    />
+    <figcaption>
+      <span class="dot" data-state="ok" aria-hidden="true"></span>
+      <span>{profile.availability}</span>
+    </figcaption>
+  </figure>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--s-7);
+    align-items: center;
+    padding-block: var(--s-9) var(--s-8);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 1.3rem + 2.6vw, 3.25rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    max-width: 20ch;
+  }
+
+  .intro {
+    margin-top: var(--s-5);
+    max-width: 60ch;
+    font-size: 1.1rem;
+    color: var(--fg-2);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  .portrait {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: var(--s-4);
+    max-width: 260px;
+  }
+
+  .portrait img {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    object-fit: cover;
+    outline: 1px solid var(--line-strong);
+    outline-offset: 6px;
+  }
+
+  figcaption {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--fg-muted);
+    text-align: left;
+  }
+
+  figcaption .dot {
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 860px) {
+    .hero {
+      grid-template-columns: 1fr;
+      padding-block: var(--s-7) var(--s-7);
+      gap: var(--s-6);
+    }
+
+    .portrait {
+      order: -1;
+      justify-items: start;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      max-width: none;
+    }
+
+    .portrait img {
+      width: 88px;
+      height: 88px;
+      outline-offset: 4px;
+    }
+  }
+</style>

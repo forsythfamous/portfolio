@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not found — Forsyth Famous">
+  <section class="container nf">
+    <p class="eyebrow">404</p>
+    <h1>This route doesn't resolve.</h1>
+    <p>The page may have moved. Start from the home page.</p>
+    <a class="btn btn-primary" href="/">Go home</a>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    display: grid;
+    gap: var(--s-4);
+    justify-items: start;
+    padding-block: var(--s-9);
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 1.4rem + 2vw, 2.6rem);
+    font-weight: 600;
+  }
+</style>
