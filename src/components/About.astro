@@ -41,8 +41,10 @@ import { appliedSkills, certifications, profile } from '../data/profile';
     width: 128px;
     height: 128px;
     object-fit: cover;
-    border-radius: var(--radius);
-    border: 1px solid var(--line-strong);
+    /* The source photo is already a circle on white; a square crop shows the corners. */
+    border-radius: 50%;
+    outline: 1px solid var(--line-strong);
+    outline-offset: 4px;
   }
 
   .text {

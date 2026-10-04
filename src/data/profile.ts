@@ -9,9 +9,9 @@ export const profile = {
     'This site runs that way. The diagram is its pipeline, live.',
   meta: 'Kraków, Poland · Azure · Google Cloud · Firebase',
   about: [
-    "I'm a cloud infrastructure and DevOps engineer in Kraków. My grounding is Azure: certified as a DevOps Engineer Expert, Network Engineer and Administrator, with Applied Skills in networking, identity, storage security and monitoring.",
-    'Beyond Azure, I harden systems end to end on Google Cloud and Firebase: data layers clients cannot write to, webhooks that are safe to redeliver, and deploys that refuse to run against the wrong project.',
-    'When a tool I rely on is wrong, I fix it upstream. I write up what I learn on dev.to.',
+    "I'm a cloud infrastructure and DevOps engineer in Kraków. I design for the failure cases first: the webhook that arrives twice, the deploy aimed at the wrong project, the model that gets something wrong.",
+    "Azure is my home ground. On Google Cloud and Firebase I've hardened production-shaped systems: databases clients can't write to, retries that can't double-send, releases that check their own result.",
+    'When a tool I depend on is wrong, I fix it upstream, and I write up what I learn as step-by-step guides.',
   ],
   email: 'forsyth.azure@gmail.com',
   links: {
