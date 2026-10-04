@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import headshot from '../assets/headshot.jpg';
+import { credentials, profile } from '../data/profile';
+---
+
+<section id="about" class="section w-prose" aria-labelledby="about-title">
+  <SectionHead path="/about" title="About" id="about-title" />
+  <div class="about">
+    <Image src={headshot} alt={`Portrait of ${profile.name}`} width={128} height={128} densities={[1, 2]} class="portrait" />
+    <div class="text">
+      {profile.about.map((p) => <p>{p}</p>)}
+      <p class="certs meta">
+        {credentials.map((c, i) => (
+          <>
+            {i > 0 && <span aria-hidden="true"> · </span>}
+            {c.url ? <a href={c.url} title={c.name}>{c.code} ↗</a> : <span title={c.name}>{c.code}</span>}
+          </>
+        ))}
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .about :global(.portrait) {
+    width: 128px;
+    height: 128px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--line-strong);
+  }
+
+  .text {
+    display: grid;
+    gap: 14px;
+  }
+
+  .certs {
+    color: var(--fg-2);
+  }
+
+  @media (max-width: 560px) {
+    .about {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .about :global(.portrait) {
+      width: 96px;
+      height: 96px;
+    }
+  }
+</style>

@@ -1,26 +1,23 @@
 ---
+import Mark from './Mark.astro';
 import { profile } from '../data/profile';
 
 const nav = [
   { href: '/#work', label: 'Work' },
-  { href: '/#platform', label: 'Platform' },
-  { href: '/#credentials', label: 'Credentials' },
-  { href: '/#writing', label: 'Writing' },
+  { href: '/#notes', label: 'Notes' },
+  { href: '/#elsewhere', label: 'Contact' },
 ];
 ---
 
 <header class="site-header">
   <div class="container bar">
     <a class="brand" href="/" aria-label={`${profile.name}, home`}>
-      <span class="mark" aria-hidden="true">ff</span>
-      <span class="brand-name">{profile.name}</span>
+      <Mark />
+      <span>{profile.name}</span>
     </a>
     <nav aria-label="Primary">
       <ul>
-        {nav.map((item) => (
-          <li class="hide-sm"><a href={item.href}>{item.label}</a></li>
-        ))}
-        <li><a class="contact" href="/#contact">Contact</a></li>
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
     </nav>
   </div>
@@ -31,7 +28,7 @@ const nav = [
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgb(11 17 32 / 0.85);
+    background: rgb(11 17 32 / 0.88);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
@@ -41,36 +38,23 @@ const nav = [
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     height: 64px;
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: var(--s-3);
+    gap: 10px;
+    min-height: 44px;
     text-decoration: none;
     color: var(--fg);
     font-weight: 600;
-  }
-
-  .mark {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
-    background: var(--accent);
-    color: #052e16;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: -0.04em;
+    white-space: nowrap;
   }
 
   ul {
     display: flex;
-    align-items: center;
-    gap: var(--s-1);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -80,30 +64,23 @@ const nav = [
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 0 var(--s-3);
-    font-size: 0.92rem;
+    padding: 0 12px;
+    font-size: 15px;
     color: var(--fg-muted);
     text-decoration: none;
-    border-radius: var(--radius-sm);
   }
 
   nav a:hover {
     color: var(--fg);
   }
 
-  nav a.contact {
-    color: var(--fg);
-    border: 1px solid var(--line-strong);
-    margin-left: var(--s-2);
-  }
+  @media (max-width: 400px) {
+    .brand span {
+      font-size: 15px;
+    }
 
-  nav a.contact:hover {
-    border-color: var(--accent);
-  }
-
-  @media (max-width: 720px) {
-    .hide-sm {
-      display: none;
+    nav a {
+      padding: 0 8px;
     }
   }
 </style>

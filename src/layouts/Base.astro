@@ -9,10 +9,7 @@ interface Props {
   description?: string;
 }
 
-const {
-  title = `${profile.name} — ${profile.role}`,
-  description = profile.headline,
-} = Astro.props;
+const { title = `${profile.name} · ${profile.role}`, description = profile.statement } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -31,6 +28,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary" />
+    <script src="/js/topology.js" defer is:inline></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

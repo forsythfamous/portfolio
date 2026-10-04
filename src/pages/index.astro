@@ -1,22 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
-import Stats from '../components/Stats.astro';
-import ControlPlane from '../components/ControlPlane.astro';
-import CaseStudies from '../components/CaseStudies.astro';
-import Credentials from '../components/Credentials.astro';
-import OpenWork from '../components/OpenWork.astro';
-import Writing from '../components/Writing.astro';
-import Contact from '../components/Contact.astro';
+import Method from '../components/Method.astro';
+import WorkCards from '../components/WorkCards.astro';
+import Upstream from '../components/Upstream.astro';
+import Notes from '../components/Notes.astro';
+import About from '../components/About.astro';
+import Elsewhere from '../components/Elsewhere.astro';
 ---
 
 <Base>
-  <Hero />
-  <Stats />
-  <CaseStudies />
-  <ControlPlane />
-  <Credentials />
-  <OpenWork />
-  <Writing />
-  <Contact />
+  <div class="container">
+    <Hero />
+    <div class="spine">
+      <Method />
+      <WorkCards />
+      <Upstream />
+      <Notes />
+      <About />
+      <Elsewhere />
+    </div>
+  </div>
 </Base>

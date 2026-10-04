@@ -1,0 +1,149 @@
+{
+  "id": "konta",
+  "title": "KONTA architecture",
+  "summary": "One Express service on Cloud Run is the only path to the ledger. The browser never touches Firestore, WhatsApp traffic arrives as HMAC-verified webhooks, and Gemini only ever produces proposals.",
+  "components": [
+    {
+      "id": "web",
+      "name": "Web dashboard",
+      "kind": "client",
+      "tech": "React SPA · Firebase Auth client SDK",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "phone",
+      "name": "Merchant WhatsApp",
+      "kind": "client",
+      "tech": "text, buttons, voice notes",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "auth",
+      "name": "Firebase Auth",
+      "kind": "external",
+      "tech": "ID tokens, verified server-side",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "meta",
+      "name": "WhatsApp Cloud API",
+      "kind": "external",
+      "tech": "Meta Graph API · webhooks",
+      "col": 1,
+      "row": 2
+    },
+    {
+      "id": "api",
+      "name": "KONTA API",
+      "kind": "service",
+      "tech": "Express · Cloud Run · 1 instance",
+      "col": 2,
+      "row": 1,
+      "note": "Holds each business's ledger in memory behind a per-business lock; the Action Engine executes confirmed proposals with a fenced claim. Non-root container with a health check; drains in-flight requests on SIGTERM."
+    },
+    {
+      "id": "scheduler",
+      "name": "Cloud Scheduler",
+      "kind": "job",
+      "tech": "daily summary job",
+      "col": 2,
+      "row": 2,
+      "note": "Calls an internal endpoint protected by a token compared in constant time; the endpoint returns 404 when no token is configured."
+    },
+    {
+      "id": "firestore",
+      "name": "Firestore",
+      "kind": "datastore",
+      "tech": "Admin SDK only · rules deny-all",
+      "col": 3,
+      "row": 1,
+      "note": "Ledger writes, the audit event and the idempotency record are committed in one batch; memory is updated only after the commit succeeds."
+    },
+    {
+      "id": "secrets",
+      "name": "Secret Manager",
+      "kind": "secret-store",
+      "tech": "per-secret accessor bindings",
+      "col": 3,
+      "row": 2,
+      "note": "WhatsApp app secret, verify and access tokens, Gemini key and job token, read by a dedicated runtime service account."
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini API",
+      "kind": "external",
+      "tech": "JSON mode · 12 s timeout",
+      "col": 3,
+      "row": 0,
+      "note": "Parses intent, answers business questions and transcribes voice notes. Failure falls back to deterministic parsing; output is never written to the ledger directly."
+    }
+  ],
+  "flows": [
+    {
+      "from": "web",
+      "to": "auth",
+      "label": "sign-in, ID token",
+      "type": "data"
+    },
+    {
+      "from": "web",
+      "to": "api",
+      "label": "REST with ID token + business id",
+      "type": "data"
+    },
+    {
+      "from": "phone",
+      "to": "meta",
+      "label": "messages and voice notes"
+    },
+    {
+      "from": "meta",
+      "to": "api",
+      "label": "webhook, HMAC-SHA256 verified, fail-closed",
+      "type": "data"
+    },
+    {
+      "from": "api",
+      "to": "meta",
+      "label": "send: 10 s timeout, never retried after a timeout",
+      "evidence": "PR #65"
+    },
+    {
+      "from": "api",
+      "to": "gemini",
+      "label": "proposal drafting, bounded and fallible",
+      "evidence": "PR #59"
+    },
+    {
+      "from": "api",
+      "to": "firestore",
+      "label": "claim transaction + atomic ledger batch"
+    },
+    {
+      "from": "secrets",
+      "to": "api",
+      "label": "secrets injected at deploy",
+      "type": "control"
+    },
+    {
+      "from": "scheduler",
+      "to": "api",
+      "label": "trigger daily summary (job token)",
+      "type": "control"
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "Google Cloud project",
+      "contains": [
+        "api",
+        "scheduler",
+        "firestore",
+        "secrets"
+      ]
+    }
+  ]
+}

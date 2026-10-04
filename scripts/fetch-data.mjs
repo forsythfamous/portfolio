@@ -96,8 +96,7 @@ const contributions = token
       const cal = data.user.contributionsCollection.contributionCalendar;
       return {
         total: cal.totalContributions,
-        weeks: cal.weeks.map((w) => w.contributionDays.map((d) => [d.date, d.contributionCount])),
-      };
+        };
     }, null)
   : null;
 
@@ -116,6 +115,12 @@ const upstream = await attempt('github.upstream', async () => {
       at: pr.pull_request?.merged_at ?? pr.created_at,
     }));
 }, []);
+
+// Diff size per upstream PR (the search API does not include it).
+for (const pr of upstream) {
+  const detail = await attempt('github.upstream-detail', () => gh(`/repos/${pr.repo}/pulls/${pr.number}`), null);
+  if (detail) Object.assign(pr, { additions: detail.additions, deletions: detail.deletions });
+}
 
 const articles = await attempt('devto.articles', async () => {
   const res = await fetch(`https://dev.to/api/articles?username=${DEVTO_USER}&per_page=6`);

@@ -1,0 +1,17 @@
+---
+// A section's node on the spine: path, heading, optional one-line aside.
+interface Props {
+  path: string;
+  title: string;
+  id: string;
+  live?: boolean;
+}
+const { path, title, id, live = false } = Astro.props;
+---
+
+<header class="sh">
+  <span class="sh-node" data-live={live ? '' : undefined} aria-hidden="true"></span>
+  <span class="sh-path" aria-hidden="true">{path}</span>
+  <h2 id={id}>{title}</h2>
+  {Astro.slots.has('default') && <p class="sh-aside"><slot /></p>}
+</header>

@@ -1,0 +1,336 @@
+/* Architecture diagrams (Topology.astro + /js/topology.js). Everything is
+   driven by classes and data-* attributes; the SVG carries no style attributes. */
+
+.topology {
+  margin: 0;
+}
+
+.topo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.topo-v {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .topology.is-full .topo-h {
+    display: none;
+  }
+
+  .topology.is-full .topo-v {
+    display: block;
+  }
+}
+
+/* Boundaries */
+.boundary rect {
+  fill: rgb(148 163 184 / 0.03);
+  stroke: var(--graphic);
+  stroke-width: 1;
+  stroke-dasharray: 10 5;
+}
+
+.boundary-tab {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  fill: var(--fg-muted);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+/* Flows */
+.flow {
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transition: stroke 150ms var(--ease), opacity 150ms var(--ease);
+}
+
+.flow[data-type='control'] {
+  stroke-dasharray: 6 4;
+}
+
+.arrow-data path {
+  fill: var(--edge);
+}
+
+.arrow-control path {
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1.5;
+}
+
+/* Nodes */
+.node {
+  cursor: pointer;
+  outline: none;
+  transition: opacity 150ms var(--ease);
+}
+
+.topology.is-thumb .node {
+  cursor: inherit;
+}
+
+.node .shape {
+  fill: var(--surface-2);
+  stroke: var(--graphic);
+  stroke-width: 1.5;
+  transition: stroke 150ms var(--ease);
+}
+
+.node .shape-inner {
+  fill: none;
+  stroke: var(--graphic);
+  stroke-width: 1;
+}
+
+.node[data-kind='external'] .shape {
+  fill: transparent;
+  stroke-dasharray: 4 3;
+}
+
+.node .tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  fill: var(--fg-muted);
+}
+
+.node .name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--fg);
+}
+
+.node[data-kind='external'] .name {
+  fill: var(--fg-2);
+}
+
+.node .tech {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  fill: var(--fg-muted);
+}
+
+.node .ring {
+  fill: none;
+  stroke: var(--focus);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.node:focus-visible .ring {
+  opacity: 1;
+}
+
+/* Status glyphs inside nodes: only the matching shape is drawn. */
+.status > * {
+  display: none;
+}
+
+.status[data-state='ok'] .g-ok {
+  display: inline;
+  fill: var(--accent);
+}
+
+.status[data-state='warn'] .g-warn {
+  display: inline;
+  fill: var(--warn);
+}
+
+.status[data-state='error'] .g-error {
+  display: inline;
+  fill: var(--error);
+}
+
+.status[data-state='idle'] .g-idle {
+  display: inline;
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 2;
+}
+
+/* Inspection: the active node, its neighbours and its flows stay lit. */
+.topo[data-active] .node:not([data-hl]),
+.topo[data-active] .flow:not([data-hl]) {
+  opacity: 0.3;
+}
+
+.node[data-hl='self'] .shape {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.node[data-hl='self'] .tag {
+  fill: var(--accent-text);
+}
+
+.flow[data-hl] {
+  stroke: var(--fg);
+  stroke-width: 2;
+}
+
+/* Thumbnails */
+.topology.is-thumb .name {
+  font-size: 15px;
+}
+
+.topology.is-thumb .node .shape {
+  opacity: 0.85;
+}
+
+/* Caption, legend, inspector, table */
+.topo-caption {
+  margin-top: 16px;
+  font-size: 15px;
+  color: var(--fg-muted);
+  max-width: 72ch;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lg::before {
+  content: '';
+  width: 22px;
+  height: 0;
+  border-top: 1.5px solid var(--edge);
+}
+
+.lg-control::before {
+  border-top-style: dashed;
+}
+
+.lg-boundary::before {
+  width: 14px;
+  height: 10px;
+  border: 1px dashed var(--graphic);
+  border-radius: 3px;
+}
+
+.inspector {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-size: 15px;
+  min-height: 72px;
+}
+
+.insp-empty {
+  color: var(--fg-muted);
+}
+
+.insp-head {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.insp-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--accent-text);
+  margin-right: 6px;
+}
+
+.insp-tech,
+.insp-meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.insp-note {
+  margin-top: 8px;
+}
+
+.insp-flows {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  display: grid;
+  gap: 4px;
+}
+
+.insp-flows .ev {
+  color: var(--accent-text);
+}
+
+.topo-table {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.topo-table summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.topo-table summary:hover {
+  color: var(--fg);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.topo-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+.topo-table th,
+.topo-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.topo-table thead th {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.topo-table tbody th {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.table-note {
+  margin-top: 10px;
+  color: var(--fg-muted);
+}

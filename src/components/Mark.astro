@@ -1,0 +1,30 @@
+---
+// The spine glyph: a line with a live (filled) node above a hollow one.
+interface Props {
+  size?: number;
+}
+const { size = 24 } = Astro.props;
+---
+
+<svg class="mark" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <line x1="12" y1="2" x2="12" y2="22" />
+  <circle class="mark-live" cx="12" cy="7" r="4" />
+  <circle class="mark-hollow" cx="12" cy="17" r="3.25" />
+</svg>
+
+<style>
+  .mark line {
+    stroke: var(--graphic);
+    stroke-width: 2;
+  }
+
+  .mark-live {
+    fill: var(--accent);
+  }
+
+  .mark-hollow {
+    fill: var(--bg);
+    stroke: var(--fg-2);
+    stroke-width: 2;
+  }
+</style>

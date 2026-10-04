@@ -1,0 +1,144 @@
+{
+  "id": "jahus",
+  "title": "JahUs architecture",
+  "summary": "Clients read through rules and write only through validated callables. Production changes arrive from one place: an operator's guarded deploy at a release tag.",
+  "components": [
+    {
+      "id": "deployer",
+      "name": "Guarded deploy",
+      "kind": "ci",
+      "tech": "operator terminal · release tags only",
+      "col": 0,
+      "row": 0,
+      "note": "Refuses CI, any project not on the allowlist, a dirty tree, or a commit without an annotated vX.Y.Z tag on origin/main; the operator must type the project id. Re-runs typecheck, lint, unit and emulator tests first, then verifies the deploy."
+    },
+    {
+      "id": "spa",
+      "name": "Web app",
+      "kind": "client",
+      "tech": "React SPA · App Check",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "ci",
+      "name": "GitHub Actions",
+      "kind": "ci",
+      "tech": "emulator suite · no cloud credentials",
+      "col": 0,
+      "row": 3,
+      "note": "Verify, emulator and browser jobs on every push and PR, against the Firebase Emulator Suite only."
+    },
+    {
+      "id": "hosting",
+      "name": "Firebase Hosting",
+      "kind": "edge",
+      "tech": "per-environment targets",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "auth",
+      "name": "Firebase Auth",
+      "kind": "external",
+      "tech": "email + Google sign-in",
+      "col": 1,
+      "row": 3
+    },
+    {
+      "id": "functions",
+      "name": "Callable API",
+      "kind": "service",
+      "tech": "Cloud Functions v2 · 16 callables",
+      "col": 2,
+      "row": 1,
+      "note": "One wrapper for every callable: auth required, UID from the verified token only, strict schemas that reject unknown fields, App Check enforced by a parameter that defaults to on."
+    },
+    {
+      "id": "scheduler",
+      "name": "Daily jobs",
+      "kind": "job",
+      "tech": "purge · scheduling · 0 retries",
+      "col": 2,
+      "row": 3
+    },
+    {
+      "id": "monitoring",
+      "name": "Cloud Monitoring",
+      "kind": "external",
+      "tech": "log metrics · uptime · alerts",
+      "col": 3,
+      "row": 0
+    },
+    {
+      "id": "firestore",
+      "name": "Firestore",
+      "kind": "datastore",
+      "tech": "deny writes · TTL · PITR",
+      "col": 3,
+      "row": 2,
+      "note": "Delete protection and 7-day point-in-time recovery; expired content is purged daily."
+    }
+  ],
+  "flows": [
+    {
+      "from": "deployer",
+      "to": "hosting",
+      "label": "deploy at release tag, verified after",
+      "type": "control"
+    },
+    {
+      "from": "spa",
+      "to": "hosting",
+      "label": "static assets",
+      "type": "data"
+    },
+    {
+      "from": "spa",
+      "to": "auth",
+      "label": "sign-in, ID token",
+      "type": "data"
+    },
+    {
+      "from": "spa",
+      "to": "functions",
+      "label": "callable: ID token + App Check token",
+      "type": "data"
+    },
+    {
+      "from": "spa",
+      "to": "firestore",
+      "label": "read-only listeners, rules-scoped",
+      "type": "data"
+    },
+    {
+      "from": "functions",
+      "to": "firestore",
+      "label": "all writes, transactional"
+    },
+    {
+      "from": "functions",
+      "to": "monitoring",
+      "label": "privacy-safe structured logs"
+    },
+    {
+      "from": "scheduler",
+      "to": "firestore",
+      "label": "daily purge",
+      "type": "data"
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "Firebase project, one per environment",
+      "contains": [
+        "hosting",
+        "auth",
+        "functions",
+        "scheduler",
+        "monitoring",
+        "firestore"
+      ]
+    }
+  ]
+}

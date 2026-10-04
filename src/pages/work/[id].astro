@@ -1,43 +1,157 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Topology from '../../components/Topology.astro';
+import { diagrams } from '../../data/diagrams';
 
 export async function getStaticPaths() {
-  const studies = await getCollection('caseStudies', ({ data }) => !data.draft);
-  return studies.map((study) => ({ params: { id: study.id }, props: { study } }));
+  const studies = (await getCollection('caseStudies', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+  return studies.map((study, i) => ({
+    params: { id: study.id },
+    props: { study, prev: studies[i - 1] ?? null, next: studies[i + 1] ?? null },
+  }));
 }
 
-const { study } = Astro.props;
-const { Content } = await render(study);
-const { title, summary, context, outcome, stack, repo } = study.data;
+const { study, prev, next } = Astro.props;
+const { Content, headings } = await render(study);
+const d = study.data;
+const isPrivate = d.source === 'private';
+
+// Every piece of evidence on the page, de-duplicated, for the index at the end.
+const index = new Map<string, string | undefined>();
+for (const dec of d.decisions) for (const e of dec.evidence) if (!index.has(e.label)) index.set(e.label, e.url);
+
+const toc = [
+  { id: 'architecture', text: 'Architecture' },
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, text: h.text })),
+  { id: 'decisions', text: 'Decisions' },
+  { id: 'failure-modes', text: 'Failure modes' },
+  { id: 'next', text: 'What I would change next' },
+  { id: 'evidence', text: 'Evidence index' },
+];
 ---
 
-<Base title={`${title} — Forsyth Famous`} description={summary}>
-  <article class="container article">
-    <a class="back meta" href="/#work">← All case studies</a>
-    <header>
-      <p class="eyebrow">{context}</p>
-      <h1>{title}</h1>
-      <p class="summary">{summary}</p>
-      <dl class="facts">
-        <div><dt>Outcome</dt><dd>{outcome}</dd></div>
-        <div>
-          <dt>Stack</dt>
-          <dd><ul class="tags">{stack.map((s) => <li class="tag">{s}</li>)}</ul></dd>
-        </div>
-        {repo && <div><dt>Source</dt><dd><a href={repo}>{repo.replace('https://', '')} ↗</a></dd></div>}
+<Base title={`${d.title} · Forsyth Famous`} description={d.summary}>
+  <div class="container page">
+    <nav class="toc" aria-label="On this page">
+      <p class="meta toc-path">/work/{study.id}</p>
+      <ol>
+        {toc.map((t) => <li><a href={`#${t.id}`}>{t.text}</a></li>)}
+      </ol>
+    </nav>
+
+    <article class="spine body">
+      <a class="back meta" href="/#work">← all work</a>
+
+      <header class="head">
+        <span class="sh-node" aria-hidden="true"></span>
+        <h1>{d.title}</h1>
+        <p class="lead">{d.summary}</p>
+        <dl class="facts">
+          <div><dt>Role</dt><dd>{d.role}</dd></div>
+          <div><dt>Period</dt><dd>{d.period}</dd></div>
+          <div><dt>Status</dt><dd>{d.status}</dd></div>
+          <div>
+            <dt>Source</dt>
+            <dd>{isPrivate ? 'private · architecture and practices described' : <a href={d.source}>{d.source.replace('https://', '')} ↗</a>}</dd>
+          </div>
+        </dl>
+        <ul class="stack meta" aria-label="Stack">{d.stack.map((t) => <li>{t}</li>)}</ul>
+      </header>
+
+      <dl class="tldr">
+        <div><dt>Problem</dt><dd>{d.tldr.problem}</dd></div>
+        <div><dt>Key decision</dt><dd>{d.tldr.decision}</dd></div>
+        <div><dt>Result</dt><dd>{d.tldr.result}</dd></div>
       </dl>
-    </header>
-    <div class="prose">
-      <Content />
-    </div>
-  </article>
+
+      <section class="block wide" aria-labelledby="architecture">
+        <h2 id="architecture">Architecture</h2>
+        <Topology diagram={diagrams[d.diagram]} caption={`${diagrams[d.diagram].summary} Hover, tap or tab through the components; control flows are dashed.`} />
+      </section>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <section class="block" aria-labelledby="decisions">
+        <h2 id="decisions">Decisions</h2>
+        <ol class="adrs" role="list">
+          {d.decisions.map((dec, i) => {
+            const id = `d-${String(i + 1).padStart(2, '0')}`;
+            return (
+              <li class="adr" id={id}>
+                <div class="adr-meta meta">
+                  <a href={`#${id}`} class="adr-id">{id.toUpperCase()}</a>
+                  <span>accepted</span>
+                </div>
+                <div class="adr-body">
+                  <h3>{dec.title}</h3>
+                  <p>{dec.decision}</p>
+                  <p class="label">Options considered</p>
+                  <ul>{dec.options.map((o) => <li>{o}</li>)}</ul>
+                  <p class="label">Trade-off accepted</p>
+                  <p>{dec.tradeoff}</p>
+                  {dec.exit && (<><p class="label">Exit path</p><p>{dec.exit}</p></>)}
+                  <p class="ev meta">
+                    {dec.evidence.map((e, j) => (
+                      <>{j > 0 && ' · '}{e.url ? <a href={e.url}>{e.label} ↗</a> : <span>{e.label}</span>}</>
+                    ))}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      <section class="block wide" aria-labelledby="failure-modes">
+        <h2 id="failure-modes">Failure modes</h2>
+        <div class="table-scroll">
+          <table class="fm">
+            <thead><tr><th scope="col">Failure</th><th scope="col">Detection</th><th scope="col">Handling</th><th scope="col">Evidence</th></tr></thead>
+            <tbody>
+              {d.failures.map((f) => (
+                <tr><th scope="row">{f.failure}</th><td>{f.detection}</td><td>{f.mitigation}</td><td class="mono">{f.evidence}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="next">
+        <h2 id="next">What I would change next</h2>
+        <ul class="next">{d.next.map((n) => <li>{n}</li>)}</ul>
+      </section>
+
+      <section class="block" aria-labelledby="evidence">
+        <h2 id="evidence">Evidence index</h2>
+        <p class="note">{isPrivate ? 'The source is private; references are to files and pull requests in it.' : 'Links point to the public repository.'}</p>
+        <ul class="index meta">
+          {[...index].map(([label, url]) => <li>{url ? <a href={url}>{label} ↗</a> : label}</li>)}
+        </ul>
+      </section>
+
+      <footer class="end meta">
+        <p>Last updated {d.updated}</p>
+        <nav class="pn" aria-label="More work">
+          {prev ? <a href={`/work/${prev.id}`}>← {prev.data.title}</a> : <span></span>}
+          {next ? <a href={`/work/${next.id}`}>{next.data.title} →</a> : <span></span>}
+        </nav>
+      </footer>
+    </article>
+  </div>
 </Base>
 
 <style>
-  .article {
-    max-width: calc(760px + var(--gutter) * 2);
-    padding-block: var(--s-7) var(--s-9);
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 48px;
+  }
+
+  .toc {
+    display: none;
   }
 
   .back {
@@ -47,78 +161,120 @@ const { title, summary, context, outcome, stack, repo } = study.data;
     text-decoration: none;
   }
 
-  header {
-    margin-top: var(--s-4);
-    padding-bottom: var(--s-6);
-    border-bottom: 1px solid var(--line);
+  .head {
+    position: relative;
+    max-width: var(--prose);
+    margin-top: 16px;
+  }
+
+  .head .sh-node {
+    top: 14px;
   }
 
   h1 {
-    font-size: clamp(1.9rem, 1.4rem + 2vw, 2.75rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-size: clamp(2rem, 1.4rem + 2vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
   }
 
-  .summary {
-    margin-top: var(--s-4);
-    font-size: 1.15rem;
+  .lead {
+    margin-top: 16px;
   }
 
   .facts {
     display: grid;
-    gap: var(--s-3);
-    margin: var(--s-6) 0 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
+    margin: 28px 0 0;
   }
 
-  .facts > div {
-    display: grid;
-    grid-template-columns: 100px minmax(0, 1fr);
-    gap: var(--s-4);
-    align-items: baseline;
-  }
-
-  dt {
+  .facts dt,
+  .tldr dt,
+  .label {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 13px;
     color: var(--fg-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
   }
 
-  dd {
-    margin: 0;
+  .facts dd {
+    margin: 2px 0 0;
+    font-size: 15px;
     color: var(--fg);
   }
 
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    color: var(--fg-2);
+  }
+
+  .stack li {
+    white-space: nowrap;
+  }
+
+  .tldr {
+    max-width: var(--prose);
+    margin: 48px 0 0;
+    padding: 20px 24px;
+    background: var(--surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .tldr dd {
+    margin: 2px 0 0;
+    color: var(--fg);
+  }
+
+  .block {
+    margin-top: 80px;
+    max-width: var(--prose);
+  }
+
+  .block.wide {
+    max-width: var(--wide);
+  }
+
+  .block > h2,
+  .prose :global(h2) {
+    margin-bottom: 20px;
+  }
+
   .prose {
-    padding-top: var(--s-6);
+    max-width: var(--prose);
   }
 
   .prose :global(h2) {
-    font-size: 1.35rem;
-    font-weight: 600;
-    margin: var(--s-7) 0 var(--s-3);
-  }
-
-  .prose :global(h2:first-child) {
-    margin-top: 0;
+    margin-top: 80px;
   }
 
   .prose :global(p),
-  .prose :global(ul) {
-    margin: 0 0 var(--s-4);
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 16px;
   }
 
-  .prose :global(ul) {
+  .prose :global(ul),
+  .prose :global(ol),
+  .next {
     padding-left: 1.2em;
   }
 
-  .prose :global(li) {
-    margin-bottom: var(--s-2);
+  .prose :global(li),
+  .next li {
+    margin-bottom: 8px;
   }
 
-  .prose :global(li::marker) {
-    color: var(--accent);
+  .prose :global(li::marker),
+  .next li::marker,
+  .adr-body ul li::marker {
+    color: var(--graphic);
   }
 
   .prose :global(strong) {
@@ -126,14 +282,199 @@ const { title, summary, context, outcome, stack, repo } = study.data;
     font-weight: 600;
   }
 
-  .prose :global(em) {
+  .prose :global(pre) {
+    margin: 0 0 20px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .prose :global(pre code) {
+    background: none;
+    padding: 0;
+    color: var(--fg-2);
+  }
+
+  .adrs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 40px;
+  }
+
+  .adr {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .adr-meta {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+  }
+
+  .adr-id {
+    color: var(--accent-text);
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .adr-body {
+    display: grid;
+    gap: 10px;
+  }
+
+  .adr-body .label {
+    margin-top: 8px;
+  }
+
+  .adr-body ul {
+    margin: 0;
+    padding-left: 1.2em;
+    display: grid;
+    gap: 6px;
+  }
+
+  .ev {
+    margin-top: 6px;
+    color: var(--fg-2);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .fm {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .fm th,
+  .fm td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 16px 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fm thead th {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
     color: var(--fg-muted);
   }
 
-  @media (max-width: 520px) {
-    .facts > div {
+  .fm tbody th {
+    color: var(--fg);
+    font-weight: 500;
+  }
+
+  .fm .mono {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+
+  .note {
+    color: var(--fg-muted);
+    margin-bottom: 12px;
+  }
+
+  .index {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    color: var(--fg-2);
+  }
+
+  .end {
+    margin-top: 96px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    max-width: var(--wide);
+  }
+
+  .pn {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .pn a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  @media (min-width: 1280px) {
+    .page {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 40px;
+    }
+
+    .toc {
+      display: block;
+      position: sticky;
+      top: 96px;
+      align-self: start;
+      font-size: 13px;
+    }
+
+    .toc ol {
+      list-style: none;
+      margin: 12px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      font-family: var(--font-mono);
+      color: var(--fg-muted);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--fg);
+    }
+
+    .toc-path {
+      color: var(--accent-text);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .facts {
       grid-template-columns: 1fr;
-      gap: var(--s-1);
+    }
+
+    .adr {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .adr-meta {
+      display: flex;
+      gap: 12px;
+    }
+
+    .block {
+      margin-top: 56px;
     }
   }
 </style>

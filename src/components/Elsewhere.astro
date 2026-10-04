@@ -1,0 +1,46 @@
+---
+import SectionHead from './SectionHead.astro';
+import { profile } from '../data/profile';
+
+const links = [
+  { label: 'Email', value: profile.email, href: `mailto:${profile.email}` },
+  { label: 'GitHub', value: 'forsythfamous', href: profile.links.github },
+  { label: 'LinkedIn', value: 'in/forsythazure', href: profile.links.linkedin },
+  { label: 'dev.to', value: 'forsyth_famous_', href: profile.links.devto },
+];
+---
+
+<section id="elsewhere" class="section w-prose" aria-labelledby="elsewhere-title">
+  <SectionHead path="/elsewhere" title="Elsewhere" id="elsewhere-title" />
+  <ul class="rows" role="list">
+    {links.map((l) => (
+      <li>
+        <a class="row" href={l.href}>
+          <span class="meta">{l.label}</span>
+          <span class="value">{l.value}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    min-height: 52px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .value {
+    color: var(--fg);
+    overflow-wrap: anywhere;
+  }
+
+  .row:hover .value {
+    color: var(--accent-text);
+  }
+</style>

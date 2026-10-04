@@ -1,0 +1,91 @@
+---
+import SectionHead from './SectionHead.astro';
+import { data } from '../data/site-data';
+
+const repos = data.repos.slice(0, 4);
+---
+
+{(data.upstream.length > 0 || repos.length > 0) && (
+  <section id="upstream" class="section w-list" aria-labelledby="upstream-title">
+    <SectionHead path="/upstream" title="Upstream" id="upstream-title" live>
+      Changes to other people's tools, synced from GitHub.
+    </SectionHead>
+    <ul class="rows" role="list">
+      {data.upstream.map((pr) => (
+        <li>
+          <a class="row" href={pr.url}>
+            <span class="glyph" data-state={pr.state === 'merged' ? 'ok' : 'idle'} aria-hidden="true"></span>
+            <span class="body">
+              <span class="ref meta">{pr.repo} #{pr.number}</span>
+              <span class="title">{pr.title}</span>
+            </span>
+            <span class="meta side">
+              {pr.state === 'merged' ? 'merged' : 'in review'}
+              {pr.additions !== undefined && <span class="diff"> +{pr.additions} −{pr.deletions}</span>}
+            </span>
+          </a>
+        </li>
+      ))}
+      {repos.map((r) => (
+        <li>
+          <a class="row" href={r.url}>
+            <span class="glyph" data-state="idle" aria-hidden="true"></span>
+            <span class="body">
+              <span class="ref meta">{r.name}</span>
+              <span class="title">{r.description}</span>
+            </span>
+            <span class="meta side">{r.language}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: baseline;
+    padding: 16px 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .body {
+    display: grid;
+    gap: 2px;
+  }
+
+  .title {
+    color: var(--fg);
+    font-weight: 500;
+  }
+
+  .row:hover .title {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 3px;
+  }
+
+  .side {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .diff {
+    color: var(--fg-2);
+  }
+
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 10px minmax(0, 1fr);
+    }
+
+    .side {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+</style>

@@ -21,12 +21,14 @@ export interface UpstreamPr {
   number: number;
   state: 'merged' | 'open';
   at: string;
+  additions?: number;
+  deletions?: number;
 }
 
 export interface SiteData {
   build: { at: string; sha: string | null; runId: string | null; trigger: string; environment: 'ci' | 'local' };
   repos: Repo[];
-  contributions: { total: number; weeks: [string, number][][] } | null;
+  contributions: { total: number } | null;
   upstream: UpstreamPr[];
   articles: { title: string; url: string; publishedAt: string; readingMinutes: number; tags: string[] }[];
   pipeline: { workflow: string; conclusion: string | null; at: string; url: string; runNumber: number } | null;

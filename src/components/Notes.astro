@@ -1,0 +1,63 @@
+---
+import SectionHead from './SectionHead.astro';
+import { data } from '../data/site-data';
+import { profile } from '../data/profile';
+
+const articles = data.articles.slice(0, 5);
+const fmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+---
+
+{articles.length > 0 && (
+  <section id="notes" class="section w-list" aria-labelledby="notes-title">
+    <SectionHead path="/notes" title="Notes" id="notes-title" live>
+      Step-by-step guides, synced from <a href={profile.links.devto}>dev.to</a>.
+    </SectionHead>
+    <ul class="rows" role="list">
+      {articles.map((a) => (
+        <li>
+          <a class="row" href={a.url}>
+            <time class="meta" datetime={a.publishedAt}>{fmt.format(new Date(a.publishedAt))}</time>
+            <span class="title">{a.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="all meta"><a href={profile.links.devto}>All notes on dev.to ↗</a></p>
+  </section>
+)}
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+    padding: 14px 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .title {
+    color: var(--fg);
+  }
+
+  .row:hover .title {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 3px;
+  }
+
+  .all a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 520px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

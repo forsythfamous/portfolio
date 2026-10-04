@@ -1,0 +1,188 @@
+---
+// Architecture diagram: build-time SVG (horizontal ≥ 768px, vertical below),
+// a server-rendered inspector, and a complete text table. /js/topology.js adds
+// keyboard and pointer inspection; without it nothing is lost.
+import {
+  KIND_LABEL,
+  KIND_TAG,
+  boundariesOf,
+  flowsOf,
+  layoutHorizontal,
+  layoutVertical,
+  truncate,
+  type Diagram,
+  type Layout,
+} from '../lib/topology';
+
+interface Props {
+  diagram: Diagram;
+  mode?: 'full' | 'thumb';
+  caption?: string;
+  /** Node/gap sizes for the horizontal layout (the hero uses a compact one). */
+  scale?: Parameters<typeof layoutHorizontal>[1];
+  inspector?: boolean;
+  tableLabel?: string;
+}
+
+const { diagram: dg, mode = 'full', caption, scale, inspector = true, tableLabel = 'Components and flows as text' } = Astro.props;
+const thumb = mode === 'thumb';
+const horizontal = layoutHorizontal(dg, scale);
+const vertical = thumb ? null : layoutVertical(dg);
+const p = `t-${dg.id}`;
+
+const ariaFor = (id: string) => {
+  const n = dg.components.find((c) => c.id === id)!;
+  const fl = flowsOf(dg, id);
+  const inside = boundariesOf(dg, id);
+  return (
+    `${n.name}, ${KIND_LABEL[n.kind]}. ${n.tech}. ${fl.in.length} inbound, ${fl.out.length} outbound` +
+    (inside.length ? `. Inside: ${inside.join('; ')}.` : '.')
+  );
+};
+
+const variants: { layout: Layout; cls: string; techMax: number }[] = thumb
+  ? [{ layout: horizontal, cls: 'topo-h', techMax: 0 }]
+  : [
+      { layout: horizontal, cls: 'topo-h', techMax: 26 },
+      { layout: vertical!, cls: 'topo-v', techMax: 40 },
+    ];
+---
+
+<figure class:list={['topology', thumb ? 'is-thumb' : 'is-full']} data-topology={thumb ? undefined : dg.id} aria-hidden={thumb ? 'true' : undefined}>
+  {variants.map(({ layout, cls, techMax }, vi) => (
+    <svg
+      class:list={['topo', cls]}
+      viewBox={`0 0 ${layout.width} ${layout.height}`}
+      role={thumb ? undefined : 'group'}
+      aria-labelledby={thumb ? undefined : `${p}-title-${vi}`}
+      aria-describedby={thumb ? undefined : `${p}-desc`}
+      focusable="false"
+    >
+      {!thumb && <title id={`${p}-title-${vi}`}>{dg.title}</title>}
+      <defs>
+        <marker id={`${p}-${vi}-arrow-data`} class="arrow-data" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0L8,4L0,8Z" />
+        </marker>
+        <marker id={`${p}-${vi}-arrow-control`} class="arrow-control" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M1,1L7,4L1,7" />
+        </marker>
+      </defs>
+
+      {layout.boundaries.map((b) => (
+        <g class="boundary">
+          <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="12" />
+          {!thumb && (
+            <text x={b.x + 12} y={b.y + 4} class="boundary-tab">{truncate(b.name.toUpperCase(), 64)}</text>
+          )}
+        </g>
+      ))}
+
+      {layout.flows.map((f) => (
+        <path
+          class="flow"
+          data-type={f.type}
+          data-from={f.from}
+          data-to={f.to}
+          d={f.d}
+          marker-end={`url(#${p}-${vi}-arrow-${f.type})`}
+        />
+      ))}
+
+      {layout.nodes.map((n) => (
+        <g
+          class="node"
+          data-kind={n.kind}
+          data-node={n.id}
+          data-col={n.col}
+          data-row={n.row}
+          data-status={n.status}
+          role={thumb ? undefined : 'button'}
+          tabindex={thumb ? undefined : '-1'}
+          aria-pressed={thumb ? undefined : 'false'}
+          aria-label={thumb ? undefined : ariaFor(n.id)}
+        >
+          {!thumb && <rect class="ring" x={n.x - 5} y={n.y - 5} width={n.w + 10} height={n.h + 10} rx="10" />}
+          <path class="shape" d={n.shape} />
+          {n.inner && <path class="shape-inner" d={n.inner} />}
+          {thumb ? (
+            <text class="name" x={n.x + 12} y={n.y + n.h / 2 + 5}>{truncate(n.name, 20)}</text>
+          ) : (
+            <>
+              <text class="tag" x={n.x + 12} y={n.y + 17}>{KIND_TAG[n.kind]}</text>
+              <text class="name" x={n.x + 12} y={n.y + 35}>{truncate(n.name, 22)}</text>
+              {techMax > 0 && <text class="tech" x={n.x + 12} y={n.y + 51}>{truncate(n.tech, techMax)}</text>}
+            </>
+          )}
+          {n.status && (
+            <g class="status" data-state={n.status} transform={`translate(${n.x + n.w - 16} ${n.y + 14})`}>
+              <circle class="g-ok" r="4.5" />
+              <path class="g-warn" d="M0,-5L5,4H-5Z" />
+              <rect class="g-error" x="-4" y="-4" width="8" height="8" />
+              <circle class="g-idle" r="4" />
+            </g>
+          )}
+        </g>
+      ))}
+    </svg>
+  ))}
+
+  {!thumb && (
+    <>
+      <figcaption id={`${p}-desc`} class="topo-caption">
+        {caption ?? dg.summary}
+        <span class="legend" aria-hidden="true">
+          <span class="lg lg-data">data</span>
+          <span class="lg lg-control">control</span>
+          <span class="lg lg-boundary">trust boundary</span>
+        </span>
+      </figcaption>
+
+      {inspector && (
+      <aside class="inspector" aria-live="polite" data-inspector>
+        <p class="insp-empty" data-insp-empty>Select a component to inspect it. Tab into the diagram, then use the arrow keys.</p>
+        {dg.components.map((n) => {
+          const fl = flowsOf(dg, n.id);
+          const inside = boundariesOf(dg, n.id);
+          return (
+            <div class="insp-item" data-insp={n.id} hidden>
+              <p class="insp-head"><span class="insp-tag">{KIND_TAG[n.kind]}</span> {n.name}</p>
+              <p class="insp-tech">{n.tech}</p>
+              {n.note && <p class="insp-note">{n.note}</p>}
+              {inside.length > 0 && <p class="insp-meta">inside: {inside.join(' · ')}</p>}
+              {(fl.out.length > 0 || fl.in.length > 0) && (
+                <ul class="insp-flows">
+                  {fl.out.map((f) => <li><span aria-label="to">{f.type === 'control' ? '⇢' : '→'}</span> {f.peer} · {f.label}{f.evidence && <> · <span class="ev">{f.evidence}</span></>}</li>)}
+                  {fl.in.map((f) => <li><span aria-label="from">←</span> {f.peer} · {f.label}{f.evidence && <> · <span class="ev">{f.evidence}</span></>}</li>)}
+                </ul>
+              )}
+              {n.href && <p><a href={n.href}>Open ↗</a></p>}
+            </div>
+          );
+        })}
+      </aside>
+      )}
+
+      <details class="topo-table">
+        <summary>{tableLabel}</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">Component</th><th scope="col">Kind</th><th scope="col">Technology</th><th scope="col">Flows out</th></tr></thead>
+            <tbody>
+              {dg.components.map((n) => (
+                <tr>
+                  <th scope="row">{n.name}</th>
+                  <td>{KIND_LABEL[n.kind]}</td>
+                  <td>{n.tech}</td>
+                  <td>{flowsOf(dg, n.id).out.map((f) => `${f.type === 'control' ? '⇢' : '→'} ${f.peer}: ${f.label}`).join('; ') || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {dg.boundaries.length > 0 && (
+            <p class="table-note">Trust boundaries: {dg.boundaries.map((b) => `${b.name} (${b.contains.map((id) => dg.components.find((c) => c.id === id)?.name).join(', ')})`).join('; ')}.</p>
+          )}
+        </div>
+      </details>
+    </>
+  )}
+</figure>

@@ -1,0 +1,71 @@
+---
+import SectionHead from './SectionHead.astro';
+import { method } from '../data/profile';
+---
+
+<section class="section w-wide" aria-labelledby="method-title">
+  <SectionHead path="/method" title="Propose · Gate · Commit" id="method-title">
+    The rule behind everything below: nothing changes a system directly.
+  </SectionHead>
+  <ol class="steps">
+    {method.map((m, i) => (
+      <li>
+        <p class="step"><span class="n" aria-hidden="true">{i + 1}</span>{m.step}</p>
+        <p>{m.text}</p>
+        <p class="ev"><a href={m.evidence.href}>{m.evidence.label} →</a></p>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  li {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .step {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .n {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent-text);
+  }
+
+  .ev {
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .ev a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  @media (max-width: 860px) {
+    .steps {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+</style>

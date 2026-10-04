@@ -1,38 +1,63 @@
 ---
+// The last node on the spine: what is deployed, and from where.
 import { data } from '../data/site-data';
-import { profile } from '../data/profile';
 
-const sha = data.build.sha?.slice(0, 7);
-const year = new Date(data.build.at).getUTCFullYear();
+const sha = data.build.sha;
+const at = data.build.at.slice(0, 16).replace('T', ' ');
+const local = data.build.environment === 'local';
 ---
 
 <footer class="site-footer">
-  <div class="container row">
-    <p>© {year} {profile.name}</p>
-    <p class="meta">
-      {sha ? (
-        <>build <a href={`https://github.com/forsythfamous/portfolio/commit/${data.build.sha}`}>{sha}</a></>
-      ) : (
-        <>local build</>
-      )}
-      {' · '}
-      <time datetime={data.build.at}>{data.build.at.slice(0, 16).replace('T', ' ')} UTC</time>
-    </p>
+  <div class="container">
+    <div class="spine end">
+      <span class="sh-node" data-live={local ? undefined : ''} aria-hidden="true"></span>
+      <p class="meta">
+        {local ? 'dev build' : 'deployed'}
+        {sha && (
+          <>
+            {' '}<a href={`https://github.com/forsythfamous/portfolio/commit/${sha}`}>{sha.slice(0, 7)}</a>
+          </>
+        )}
+        {' · '}{at} UTC
+        {data.pipeline && <> · pipeline <a href={data.pipeline.url}>#{data.pipeline.runNumber}</a></>}
+      </p>
+      <p class="meta">© {data.build.at.slice(0, 4)} Forsyth Famous</p>
+    </div>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    border-top: 1px solid var(--line);
-    padding-block: var(--s-6);
-    font-size: 0.9rem;
-    color: var(--fg-muted);
+    padding-block: var(--section-gap) 48px;
   }
 
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--s-3);
+  .end {
+    padding-top: 0;
+  }
+
+  .end::before {
+    bottom: auto;
+    top: -48px;
+    height: 54px;
+  }
+
+  .sh-node {
+    position: absolute;
+    left: calc(var(--spine-x) - 5px);
+    top: 4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--graphic);
+  }
+
+  .sh-node[data-live] {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .meta + .meta {
+    margin-top: 4px;
   }
 </style>
