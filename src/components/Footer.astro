@@ -21,7 +21,7 @@ const local = data.build.environment === 'local';
         {' · '}{at} UTC
         {data.pipeline && <> · pipeline <a href={data.pipeline.url}>#{data.pipeline.runNumber}</a></>}
       </p>
-      <p class="meta">© {data.build.at.slice(0, 4)} Forsyth Famous</p>
+      <p class="meta">© {data.build.at.slice(0, 4)} Forsyth Famous · <a href="/privacy/">Privacy</a></p>
     </div>
   </div>
 </footer>

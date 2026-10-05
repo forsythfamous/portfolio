@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Privacy — Forsyth Famous" description="What this site and the job-ops tool do with data.">
+  <section class="container privacy">
+    <p class="eyebrow">Privacy</p>
+    <h1>Privacy</h1>
+    <p class="meta">Last updated 5 October 2026</p>
+
+    <h2>This website</h2>
+    <p>
+      forsythfamous.pages.dev sets no cookies and runs no analytics, advertising or third-party scripts. Its only
+      network request after loading is to its own <code>/status.json</code>, to show the live status line.
+    </p>
+    <p>
+      The site is hosted on Cloudflare Pages. Cloudflare processes standard connection data, such as IP addresses,
+      to deliver and protect the site, under{' '}
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.
+    </p>
+
+    <h2>job-ops</h2>
+    <p>
+      job-ops is a personal job-search tool used only by its owner, Forsyth Famous. It is not offered to anyone else.
+    </p>
+    <ul>
+      <li>
+        It connects to its owner's own Gmail account with read-only access (<code>gmail.readonly</code>). It reads
+        job-alert and recruiter emails to build a list of job openings and to track applications. It cannot send,
+        delete or change any email.
+      </li>
+      <li>
+        Email content is processed by Anthropic's Claude API to extract and rank job details. It is stored only on
+        the owner's own devices and private accounts, and is never sold, shared or used for advertising.
+      </li>
+      <li>
+        job-ops's use of information received from Google APIs adheres to the{' '}
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+        including the Limited Use requirements.
+      </li>
+      <li>
+        Access can be revoked at any time from{' '}<a href="https://myaccount.google.com/permissions">Google account
+        permissions</a>.
+      </li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p><a href="mailto:forsyth.azure@gmail.com">forsyth.azure@gmail.com</a></p>
+  </section>
+</Base>
+
+<style>
+  .privacy {
+    display: grid;
+    gap: 16px;
+    max-width: var(--prose);
+    padding-block: var(--section-gap);
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 1.4rem + 2vw, 2.6rem);
+    font-weight: 600;
+  }
+
+  h2 {
+    margin-top: 24px;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  ul {
+    display: grid;
+    gap: 10px;
+    padding-left: 1.2rem;
+  }
+</style>
