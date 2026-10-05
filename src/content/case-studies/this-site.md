@@ -1,6 +1,6 @@
 ---
 title: 'This site: a portfolio that operates itself'
-summary: 'A static site whose content, live status diagram and case-study drafts are kept current by its own pipeline, and which only shows claims a repository can back.'
+summary: 'A static site whose content and live status diagram are kept current by its own pipeline, and which only shows claims a repository can back.'
 order: 4
 role: 'Design, build and operations'
 period: 'Oct 2026'
@@ -40,7 +40,7 @@ decisions:
       - { label: 'public/_headers', url: 'https://github.com/forsythfamous/portfolio/blob/main/public/_headers' }
       - { label: '.github/workflows/ci.yml', url: 'https://github.com/forsythfamous/portfolio/blob/main/.github/workflows/ci.yml' }
   - title: 'The agent proposes; review commits'
-    decision: 'A weekly workflow runs an AI agent against my public repositories. When one is new or has changed significantly, it drafts a case study and opens a pull request labelled case-study-draft, listing the files it relied on. It has no path to main except a reviewed merge.'
+    decision: 'The repository includes a scheduled workflow that runs an AI agent against my public repositories. When one is new or has changed significantly, it drafts a case study and opens a pull request labelled case-study-draft, listing the files it relied on. It has no path to main except a reviewed merge.'
     options:
       - 'Let the agent commit to main: always current, and unreviewed claims in public.'
       - 'Pull requests only.'

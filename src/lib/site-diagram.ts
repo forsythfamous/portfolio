@@ -32,11 +32,11 @@ export const siteDiagram: Diagram = {
       id: 'agent',
       name: 'Case-study agent',
       kind: 'ci',
-      tech: data.agent?.lastRun ? `${data.agent.openDrafts} draft(s) in review` : 'weekly · PR-gated',
+      tech: data.agent?.lastRun ? `${data.agent.openDrafts} draft(s) in review` : 'scheduled · PR-gated',
       col: 0,
       row: 0,
       status: agentState,
-      note: 'Weekly AI agent run. Drafts a case study when a public repository is new or has changed significantly, and opens a pull request labelled case-study-draft. Nothing ships until it is reviewed and merged.',
+      note: 'Scheduled AI agent workflow. When a public repository is new or has changed significantly, it drafts a case study and opens a pull request labelled case-study-draft. Nothing ships until it is reviewed and merged.',
       href: 'https://github.com/forsythfamous/portfolio/pulls?q=label%3Acase-study-draft',
     },
     {
