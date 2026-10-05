@@ -135,8 +135,8 @@ const toc = [
       <footer class="end meta">
         <p>Last updated {d.updated}</p>
         <nav class="pn" aria-label="More work">
-          {prev ? <a href={`/work/${prev.id}`}>← {prev.data.title}</a> : <span></span>}
-          {next ? <a href={`/work/${next.id}`}>{next.data.title} →</a> : <span></span>}
+          {prev ? <a href={`/work/${prev.id}/`}>← {prev.data.title}</a> : <span></span>}
+          {next ? <a href={`/work/${next.id}/`}>{next.data.title} →</a> : <span></span>}
         </nav>
       </footer>
     </article>

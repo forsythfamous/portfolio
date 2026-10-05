@@ -14,7 +14,7 @@ const studies = (await getCollection('caseStudies', ({ data }) => !data.draft)).
   <ul class="cards" role="list">
     {studies.map((s) => (
       <li>
-        <a class="card" href={`/work/${s.id}`}>
+        <a class="card" href={`/work/${s.id}/`}>
           <div class="thumb">
             <Topology diagram={diagrams[s.data.diagram]} mode="thumb" />
           </div>

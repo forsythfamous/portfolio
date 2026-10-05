@@ -12,7 +12,7 @@ const healthy = statusRows.filter((r) => r.state === 'ok').length;
     <h1 id="hero-title">{profile.name}</h1>
     <p class="lead statement">{profile.statement}</p>
     <ul class="meta tags" aria-label="Location and platforms">{profile.meta.split(' · ').map((m) => <li>{m}</li>)}</ul>
-    <p class="howto"><a class="link-accent" href="/work/this-site">→ read how this site runs</a></p>
+    <p class="howto"><a class="link-accent" href="/work/this-site/">→ read how this site runs</a></p>
   </div>
 
   <div class="system">

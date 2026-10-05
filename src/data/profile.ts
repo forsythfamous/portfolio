@@ -48,16 +48,16 @@ export const method = [
   {
     step: 'Propose',
     text: 'Anything that wants to change the system produces a proposal, never the change itself: a model drafting a ledger entry, an agent drafting a case study, a release tag asking to go to production.',
-    evidence: { label: 'KONTA: the model drafts, never writes', href: '/work/konta#d-01' },
+    evidence: { label: 'KONTA: the model drafts, never writes', href: '/work/konta/#d-01' },
   },
   {
     step: 'Gate',
     text: 'A person or a check that cannot be skipped decides: a confirmation, a reviewed pull request, a deploy script that refuses the wrong project or an untagged commit.',
-    evidence: { label: 'JahUs: guarded production deploys', href: '/work/jahus#d-02' },
+    evidence: { label: 'JahUs: guarded production deploys', href: '/work/jahus/#d-02' },
   },
   {
     step: 'Commit',
     text: 'Only deterministic code applies an approved change, atomically and idempotently, and the result is verified afterwards rather than assumed.',
-    evidence: { label: 'This site: agent drafts merge by PR', href: '/work/this-site#d-04' },
+    evidence: { label: 'This site: agent drafts merge by PR', href: '/work/this-site/#d-04' },
   },
 ];
