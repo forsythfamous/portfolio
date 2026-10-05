@@ -1,5 +1,6 @@
-// Hand-maintained profile content. Every claim must be backed by a repository
-// or a verifiable credential (see ~/career/evidence); no employer names.
+// Hand-maintained profile content. Project claims must be backed by a repository
+// or a verifiable credential (see ~/career/evidence); the About opening states
+// career background in plain language for non-technical readers. No employer names.
 
 export const profile = {
   name: 'Forsyth Famous',
@@ -9,9 +10,9 @@ export const profile = {
     'This site runs that way. The diagram is its pipeline, live.',
   meta: 'Kraków, Poland · Azure · Google Cloud · Firebase',
   about: [
-    "I'm a cloud infrastructure and DevOps engineer in Kraków. I design for the failure cases first: the webhook that arrives twice, the deploy aimed at the wrong project, the model that gets something wrong.",
-    "Azure is my home ground. On Google Cloud and Firebase I've hardened production-shaped systems: databases clients can't write to, retries that can't double-send, releases that check their own result.",
-    'When a tool I depend on is wrong, I fix it upstream, and I write up what I learn as step-by-step guides.',
+    "I'm a cloud infrastructure and DevOps engineer in Kraków with 6+ years in tech. I keep Azure and AWS platforms for large enterprise customers secure and running: managing access and governance, resolving incidents, and automating the manual work that slows teams down.",
+    "I'm a Microsoft Certified DevOps Engineer Expert, Azure Network Engineer and Azure Administrator.",
+    'In my own projects I go deeper into the engineering: systems that stay correct when a message arrives twice, deployments that refuse the wrong target, and changes that only ship after review. The case studies above show how I work.',
   ],
   email: 'forsyth.azure@gmail.com',
   links: {
