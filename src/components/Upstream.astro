@@ -5,7 +5,7 @@ import { data } from '../data/site-data';
 const repos = data.repos.slice(0, 4);
 ---
 
-{(data.upstream.length > 0 || repos.length > 0) && (
+{data.upstream.length > 0 && (
   <section id="upstream" class="section w-list" aria-labelledby="upstream-title">
     <SectionHead path="/upstream" title="Upstream" id="upstream-title" live>
       Changes to other people's tools, synced from GitHub.
@@ -26,6 +26,16 @@ const repos = data.repos.slice(0, 4);
           </a>
         </li>
       ))}
+    </ul>
+  </section>
+)}
+
+{repos.length > 0 && (
+  <section id="repos" class="section w-list" aria-labelledby="repos-title">
+    <SectionHead path="/repos" title="Repositories" id="repos-title" live>
+      My own public repositories, synced from GitHub.
+    </SectionHead>
+    <ul class="rows" role="list">
       {repos.map((r) => (
         <li>
           <a class="row" href={r.url}>
