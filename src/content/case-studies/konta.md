@@ -3,10 +3,10 @@ title: 'KONTA: a ledger a language model cannot corrupt'
 summary: 'An AI-assisted business ledger for small merchants, used from a web dashboard and from WhatsApp, hardened so that money only moves through confirmed, idempotent, deterministic code.'
 order: 1
 role: 'Security, reliability and deployment hardening'
-period: 'Sep 2026'
+period: 'Sep–Oct 2026'
 status: 'Private · Cloud Run, single instance'
 source: 'private'
-stack: ['Cloud Run', 'Firestore', 'Secret Manager', 'Cloud Scheduler', 'Firebase Auth', 'Node.js', 'Express', 'TypeScript', 'Docker', 'WhatsApp Cloud API', 'Gemini']
+stack: ['Cloud Run', 'Firestore', 'Secret Manager', 'Cloud Scheduler', 'Firebase Auth', 'Node.js', 'Express', 'TypeScript', 'Docker', 'GitHub Actions', 'Workload Identity Federation', 'Playwright', 'WhatsApp Cloud API', 'Gemini']
 diagram: 'konta'
 core: 'The model proposes, a person confirms, deterministic code commits.'
 tldr:
@@ -76,12 +76,12 @@ failures:
   - { failure: 'Redeploy mid-conversation', detection: 'SIGTERM', mitigation: 'Drain, then resume state from Firestore', evidence: 'PR #61' }
   - { failure: 'A test that never runs', detection: 'Exit codes ignored', mitigation: 'Audited; nine silent passes fixed', evidence: 'PR #43' }
 next:
-  - 'Run the test suite as a required check on every pull request and deploy from CI; today deploys are a manual Cloud Run source deploy.'
+  - 'Make CI a required status check through branch protection; today it runs on every pull request but is not enforced.'
   - 'Move ledger reads inside Firestore transactions and lift the single-instance cap.'
   - 'Key the general API rate limiter by user after authentication, not by IP.'
   - 'Apply the message-log consent gate and a retention TTL to the raw inbound webhook log.'
   - 'Make the once-a-day summary guard a transactional create instead of read-then-send.'
-updated: '2026-10-05'
+updated: '2026-10-20'
 ---
 
 ## Context and constraints
@@ -107,8 +107,18 @@ attempt, voice notes capped at 5 MB, inbound text at 4,096 characters, request b
 
 ## Verification
 
-- **72 merged pull requests**, each carrying its own rationale.
-- **98 test files** run by a custom runner that executes each file in its own process, strips cloud credentials from the
+- **127 merged pull requests**, each carrying its own rationale.
+- **119 test files** run by a custom runner that executes each file in its own process, strips cloud credentials from the
   environment and refuses to use Firestore unless it points at the emulator; the same suite runs against the emulator.
 - Suites target concurrency and isolation directly: claim fencing, proposal concurrency, cross-tenant isolation, end-to-end webhooks, HMAC.
 - The tests themselves were audited: nine files that always reported a pass were found and fixed (PR #43).
+- Eight Playwright browser specs, including an accessibility check, run against a fully local app: in-memory database and
+  the Firebase Auth emulator under an emulator-only project, so nothing touches production.
+
+## Delivery
+
+- **CI on every push and pull request:** typecheck, the full test suite, then the browser suite.
+- **Deploys are gated by CI.** A manually started workflow runs CI first and deploys `main` to Cloud Run only if it passes,
+  from a clean checkout, one deploy at a time, so what goes live is exactly what was merged.
+- **No stored cloud keys.** GitHub authenticates to Google Cloud through Workload Identity Federation: a short-lived OIDC
+  token is exchanged for a dedicated deployer service account.

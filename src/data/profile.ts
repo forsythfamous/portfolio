@@ -8,7 +8,7 @@ export const profile = {
   statement:
     'I build infrastructure that shows its own working: every change is proposed, gated, then committed. ' +
     'This site runs that way. The diagram is its pipeline, live.',
-  meta: 'Kraków, Poland · Azure · Google Cloud · Firebase',
+  meta: 'Kraków, Poland · Azure · AWS · Terraform · Kubernetes',
   about: [
     "I'm a cloud infrastructure and DevOps engineer in Kraków with 6+ years in tech. I keep Azure and AWS platforms for large enterprise customers secure and running: managing access and governance, resolving incidents, and automating the manual work that slows teams down.",
     "I'm a Microsoft Certified DevOps Engineer Expert, Azure Network Engineer and Azure Administrator.",
