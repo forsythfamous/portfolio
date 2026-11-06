@@ -31,6 +31,8 @@ export const certifications = [
   { code: 'AZ-104', name: 'Azure Administrator Associate', url: learn('DF92838DC9D2E7C0') },
 ];
 
+// Only the infrastructure, networking, security and identity credentials;
+// Power Automate and Purview are left off the site.
 export const appliedSkills = [
   { name: 'Configure secure access to your workloads using Azure networking', url: learn('5AC8EB7AB20FD728') },
   { name: 'Deploy and configure Azure Monitor', url: learn('64970AD0DDB23409') },
@@ -39,8 +41,6 @@ export const appliedSkills = [
   { name: 'Get started with Azure management tasks', url: learn('B80F55F3470B0214') },
   { name: 'Get started with cloud security and monitoring tasks', url: learn('871FEFDE3CFDE403') },
   { name: 'Administer Active Directory Domain Services', url: learn('CBD217E553C8EAAA') },
-  { name: 'Create and manage automated processes by using Power Automate', url: learn('D0D21E1EBAEEE09F') },
-  { name: 'Implement retention, eDiscovery, and Communication Compliance in Microsoft Purview', url: learn('3BAE18873CAA3DD') },
 ];
 
 // Propose · Gate · Commit: the method, with where each part is evidenced.
