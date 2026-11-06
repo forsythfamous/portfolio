@@ -1,6 +1,6 @@
 ---
 title: 'Azure hub-spoke: private by default, changed only through review'
-summary: 'A Terraform reference implementation of an Azure hub-spoke network: storage reachable only through a private endpoint, a WAF in Prevention mode in front of the workload, and a pipeline that applies nothing unless the plan matches the one a reviewer approved.'
+summary: 'A Terraform reference design for an Azure hub-spoke network: storage reachable only through a private endpoint, a WAF in Prevention mode in front of the workload, and a pipeline built to apply nothing unless the plan matches the one a reviewer approved.'
 order: 2
 role: 'Architecture, Terraform and delivery pipeline'
 period: 'Oct 2026'
@@ -8,11 +8,11 @@ status: 'Public reference implementation'
 source: 'https://github.com/forsythfamous/azure-hub-spoke'
 stack: ['Terraform', 'azurerm 4.x', 'Virtual Network', 'Private Endpoints', 'Private DNS', 'Application Gateway WAF_v2', 'Azure Firewall', 'Log Analytics', 'GitHub Actions', 'OIDC', 'tflint', 'trivy']
 diagram: 'azure'
-core: 'Nothing is applied unless a fresh plan matches the one a reviewer approved.'
+core: 'Built so that nothing is applied unless a fresh plan matches the one a reviewer approved.'
 tldr:
   problem: 'Data services reachable on public endpoints, spokes that can talk to each other by accident, and infrastructure changes reviewed as code diffs rather than as what will actually change.'
   decision: 'Private endpoints with centrally hosted DNS, a WAF in Prevention mode, isolation as the default, and a pipeline in which apply runs only after approval and only if the plan has not changed since.'
-  result: 'Storage has no public path, spokes cannot reach each other unless an explicit firewall rule allows it, pull requests only ever get read-only credentials, and formatting, validation, lint, a security scan and mocked plan tests run on every change.'
+  result: 'The code defines storage with no public path, spokes that cannot reach each other unless an explicit firewall rule allows it, and pull requests that can only ever obtain read-only credentials. The pipeline is written to run formatting, validation, lint, a security scan and Terraform plan tests on every change.'
 decisions:
   - title: 'Customer-managed hub-spoke over Virtual WAN'
     decision: 'A hub VNet peered to each spoke. Every routing decision is a visible Terraform resource: peerings, route tables, firewall rules.'
@@ -63,7 +63,7 @@ decisions:
       - { label: 'ADR-0005', url: 'https://github.com/forsythfamous/azure-hub-spoke/blob/main/docs/adr/0005-oidc-federated-credentials.md' }
       - { label: 'docs/deployment-identity.md', url: 'https://github.com/forsythfamous/azure-hub-spoke/blob/main/docs/deployment-identity.md' }
   - title: 'Approval covers the exact change'
-    decision: 'Pull requests run fmt, validate, tflint, trivy and a speculative plan. On main, a fresh plan is published with a SHA-256 fingerprint of the planned changes; after a reviewer approves the production environment, the job re-plans under a lock and applies only if the fingerprint still matches.'
+    decision: 'The propose workflow runs fmt, validate, tflint, trivy and a speculative plan on pull requests. On main, a fresh plan is published with a SHA-256 fingerprint of the planned changes; after a reviewer approves the production environment, the job re-plans under a lock and applies only if the fingerprint still matches.'
     options:
       - 'Pass the plan file between jobs: plan files can hold sensitive values, and artifacts on a public repository are readable.'
       - 'Re-plan and compare fingerprints.'
@@ -83,7 +83,7 @@ next:
   - 'Add Azure Policy assignments as guardrails alongside the Terraform checks.'
   - 'Move to the azurerm 5.x provider line.'
   - 'Revisit Virtual WAN or Azure Virtual Network Manager if the number of spokes grows.'
-updated: '2026-10-05'
+updated: '2026-11-07'
 ---
 
 ## Context and constraints
@@ -100,10 +100,10 @@ seeing exactly what it will do.
 
 ## Verification
 
-- **On every pull request:** `terraform fmt`, `terraform validate`, `tflint` with the azurerm ruleset, and a `trivy`
+- **Pull request checks** (`propose.yml`): `terraform fmt`, `terraform validate`, `tflint` with the azurerm ruleset, and a `trivy`
   misconfiguration scan with each accepted finding justified inline.
-- **Mocked plan tests** (`terraform test`, no credentials needed) assert that the firewall is off by default, that
+- **Plan tests** (`terraform test`, no Azure credentials needed) assert that the firewall is off by default, that
   only the app subnet routes through it when it is on, that the storage account has public access and shared keys
   disabled, that every resource group has a budget, and that invalid workload names are rejected.
-- **docs/VERIFY.md** lists the commands that prove each property in a live subscription: peering state, private DNS
+- **docs/VERIFY.md** lists the commands to prove each property against a live subscription: peering state, private DNS
   resolution from inside the spokes, rejected public access, WAF blocks and rate limiting in the firewall logs.
