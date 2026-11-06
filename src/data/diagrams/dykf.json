@@ -1,0 +1,70 @@
+{
+  "id": "dykf",
+  "title": "One image, three registries",
+  "summary": "One multi-stage build produces one distroless image, which is tagged by version and commit and pushed unchanged to Docker Hub, Azure Container Registry and Amazon ECR. Two scanners check it.",
+  "components": [
+    {
+      "id": "build",
+      "name": "Multi-stage build",
+      "kind": "ci",
+      "tech": "docker build · operator terminal",
+      "col": 0,
+      "row": 1,
+      "note": "Stage 1 installs from the lockfile and builds the client and an esbuild server bundle. Stage 2 copies only dist and server.mjs onto a distroless nonroot Node 24 base. Version and commit SHA come from package.json and git, never typed by hand."
+    },
+    {
+      "id": "image",
+      "name": "Runtime image",
+      "kind": "service",
+      "tech": "distroless nodejs24 · UID 65532 · no shell",
+      "col": 1,
+      "row": 1,
+      "note": "No node_modules, no shell, no package manager. The health check calls node directly. SIGTERM is handled, so docker stop exits 0 in about 0.2 s."
+    },
+    {
+      "id": "scanners",
+      "name": "CVE scanners",
+      "kind": "external",
+      "tech": "ECR basic scan · Trivy",
+      "col": 1,
+      "row": 2
+    },
+    {
+      "id": "hub",
+      "name": "Docker Hub",
+      "kind": "edge",
+      "tech": "public · scoped token",
+      "col": 2,
+      "row": 0,
+      "note": "The public pull source."
+    },
+    {
+      "id": "acr",
+      "name": "Azure ACR",
+      "kind": "datastore",
+      "tech": "Basic · Entra ID · admin user off",
+      "col": 2,
+      "row": 1,
+      "note": "Torn down after verification; the README keeps the digest record."
+    },
+    {
+      "id": "ecr",
+      "name": "Amazon ECR",
+      "kind": "datastore",
+      "tech": "immutable tags · scan on push",
+      "col": 2,
+      "row": 2,
+      "note": "Torn down after verification; the README keeps the digest record."
+    }
+  ],
+  "flows": [
+    { "from": "build", "to": "image", "label": "tags: version + git SHA, OCI labels", "type": "data" },
+    { "from": "image", "to": "hub", "label": "push, same digest", "type": "data" },
+    { "from": "image", "to": "acr", "label": "push, same digest", "type": "data" },
+    { "from": "image", "to": "ecr", "label": "push, same digest", "type": "data" },
+    { "from": "scanners", "to": "image", "label": "findings drove the distroless move", "type": "control" }
+  ],
+  "boundaries": [
+    { "name": "Registries", "contains": ["hub", "acr", "ecr"] }
+  ]
+}
