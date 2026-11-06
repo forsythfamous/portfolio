@@ -35,6 +35,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Use the workflow token; no Claude GitHub App / OIDC exchange needed.
+          github_token: ${{ github.token }}
           claude_args: >-
             --model claude-sonnet-5-5
             --max-turns 40
