@@ -35,5 +35,5 @@ npm run build    # fetch data, type-check, build to dist/
 |---|---|---|
 | `CLOUDFLARE_API_TOKEN` | Deploy | Token with *Cloudflare Pages: Edit* only |
 | `CLOUDFLARE_ACCOUNT_ID` | Deploy | |
-| `ANTHROPIC_API_KEY` | Case-study agent | Also set the repository variable `CASE_STUDY_AGENT_ENABLED` to `true` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Case-study agent | From `claude setup-token` (Claude subscription, no API billing). Also set the repository variable `CASE_STUDY_AGENT_ENABLED` to `true` |
 | `GH_READ_TOKEN` | Deploy (optional) | Fine-grained, public repositories, read-only |

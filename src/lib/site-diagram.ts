@@ -12,12 +12,15 @@ const pipelineState: State | undefined = data.pipeline
     : 'error'
   : undefined;
 
+// A skipped run means the agent is switched off, not broken.
 const agentState: State | undefined = data.agent?.lastRun
-  ? data.agent.lastRun.conclusion === 'success'
-    ? data.agent.openDrafts > 0
-      ? 'warn'
-      : 'ok'
-    : 'error'
+  ? data.agent.lastRun.conclusion === 'skipped'
+    ? 'idle'
+    : data.agent.lastRun.conclusion === 'success'
+      ? data.agent.openDrafts > 0
+        ? 'warn'
+        : 'ok'
+      : 'error'
   : undefined;
 
 export const isDevBuild = data.build.environment === 'local';
