@@ -1,0 +1,81 @@
+{
+  "id": "dykf",
+  "title": "One image, three registries",
+  "summary": "A two-stage build produces one distroless runtime image. It is scanned, tagged with a version and a commit SHA, and pushed unchanged to Docker Hub, Azure Container Registry and Amazon ECR, where the manifest digest is identical.",
+  "components": [
+    {
+      "id": "op",
+      "name": "Operator workstation",
+      "kind": "client",
+      "tech": "docker build · buildx · registry CLIs",
+      "col": 0,
+      "row": 1,
+      "note": "Version and commit SHA are read from package.json and git, never typed by hand, and written into OCI labels. Pushes are manual; a tag-triggered workflow is the next step."
+    },
+    {
+      "id": "build",
+      "name": "Build stage",
+      "kind": "job",
+      "tech": "node:24-slim · npm ci · vite · esbuild",
+      "col": 1,
+      "row": 1,
+      "note": "Manifests are copied before source so a code change does not re-run npm ci. The server is bundled into one file, so the runtime needs no node_modules."
+    },
+    {
+      "id": "image",
+      "name": "Runtime image 1.1.0",
+      "kind": "service",
+      "tech": "distroless nodejs24 · UID 65532 · no shell",
+      "col": 2,
+      "row": 1,
+      "note": "219 MB on disk, 56.2 MB compressed. Only the built frontend and the bundled server are copied in. SIGTERM is handled, so docker stop exits in about 0.2 s with code 0."
+    },
+    {
+      "id": "scan",
+      "name": "CVE scanners",
+      "kind": "job",
+      "tech": "ECR basic scan · Trivy",
+      "col": 2,
+      "row": 2,
+      "note": "Two independent databases. 1.0.0 on node:24-slim showed 7 critical and 15 high in ECR; 1.1.0 on distroless shows none in either scanner."
+    },
+    {
+      "id": "hub",
+      "name": "Docker Hub",
+      "kind": "external",
+      "tech": "public · scoped access token",
+      "col": 3,
+      "row": 0,
+      "note": "The public pull source. Anonymous access was checked against the registry API."
+    },
+    {
+      "id": "acr",
+      "name": "Azure Container Registry",
+      "kind": "external",
+      "tech": "Basic · Entra ID · admin user off",
+      "col": 3,
+      "row": 1,
+      "note": "Released and verified, then torn down with its resource group."
+    },
+    {
+      "id": "ecr",
+      "name": "Amazon ECR",
+      "kind": "external",
+      "tech": "IMMUTABLE tags · scan on push",
+      "col": 3,
+      "row": 2,
+      "note": "Released and verified, then deleted along with the bootstrap access key."
+    }
+  ],
+  "flows": [
+    { "from": "op", "to": "build", "label": "docker build, lean context", "type": "control" },
+    { "from": "build", "to": "image", "label": "dist and server.mjs only", "type": "data" },
+    { "from": "image", "to": "scan", "label": "scanned before release", "type": "control" },
+    { "from": "image", "to": "hub", "label": "push 1.1.0 and sha tag", "type": "data" },
+    { "from": "image", "to": "acr", "label": "same digest", "type": "data" },
+    { "from": "image", "to": "ecr", "label": "same digest", "type": "data" }
+  ],
+  "boundaries": [
+    { "name": "Image build", "contains": ["build", "image"] }
+  ]
+}
